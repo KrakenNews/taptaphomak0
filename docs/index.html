@@ -4,15 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TapKraken | RGB Edition</title>
-  <!-- Подключаем шрифт для футуристичного вида -->
+  <!-- Футуристичный шрифт для усиления эффекта -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Загрузочный экран -->
+  <!-- Загрузочный экран с анимацией -->
   <div id="loading-screen">
     <img src="loading-screen.webp" alt="Загрузка..." id="loading-image">
   </div>
+  
+  <!-- Дополнительный контейнер для фоновых частиц -->
+  <div id="particle-container"></div>
 
   <!-- Основной контент -->
   <div id="main-content" style="display: none;">
@@ -26,7 +29,7 @@
       <p>Энергия: <span id="energy">500</span></p>
 
       <div id="kraken-container">
-        <!-- Клик по изображению Кракена вызывает функцию tap() -->
+        <!-- При клике вызывается tap(event) -->
         <img id="kraken" src="kraken.png" alt="Kraken" draggable="false" onclick="tap(event)">
       </div>
 
@@ -36,14 +39,14 @@
       </div>
     </div>
 
-    <!-- Магазин (старый функционал не удалён) -->
+    <!-- Магазин (без удаления старого функционала) -->
     <div id="shop-modal">
       <div id="shop-content">
         <h2>Магазин</h2>
-        <div class="shop-item" onclick="buyUpgrade(1, 10, 50)">+1 очко/тап (-50 энергии) - 10 очков</div>
-        <div class="shop-item" onclick="buyUpgrade(5, 50, 100)">+5 очков/тап (-100 энергии) - 50 очков</div>
-        <div class="shop-item" onclick="buyEnergyRegen(1, 30)">+1 к восстановлению энергии - 30 очков</div>
-        <div class="shop-item" onclick="buyAutoClicker(1, 100)">Автокликер (+1 очко/сек) - 100 очков</div>
+        <div class="shop-item" onclick="buyUpgrade(1, 10, 50)">+1 очко/тап (-50 энергии) — 10 очков</div>
+        <div class="shop-item" onclick="buyUpgrade(5, 50, 100)">+5 очков/тап (-100 энергии) — 50 очков</div>
+        <div class="shop-item" onclick="buyEnergyRegen(1, 30)">+1 к восстановлению энергии — 30 очков</div>
+        <div class="shop-item" onclick="buyAutoClicker(1, 100)">Автокликер (+1 очко/сек) — 100 очков</div>
         <button id="close-shop" onclick="closeShop()">Закрыть</button>
       </div>
     </div>
@@ -59,14 +62,14 @@
         </div>
         <p id="puzzle-timer">Время: <span id="timer">60</span> секунд</p>
         <div id="puzzle-container">
-          <!-- Здесь через puzzle.js генерируется сетка элементов головоломки -->
+          <!-- Генерация сетки головоломки через puzzle.js -->
         </div>
         <button id="close-puzzle" onclick="closePuzzle()">Назад</button>
       </div>
     </div>
   </div>
   
-  <!-- ВАЖНО! Подключаем сначала puzzle.js, затем script.js -->
+  <!-- Важно: сначала puzzle.js, затем script.js -->
   <script src="puzzle.js"></script>
   <script src="script.js"></script>
 </body>

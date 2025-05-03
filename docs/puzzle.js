@@ -1,4 +1,4 @@
-// Элементы модального окна головоломки и связанные узлы
+// Элементы модального окна головоломки
 let puzzleModal = document.getElementById("puzzle-modal");
 let puzzleContainer = document.getElementById("puzzle-container");
 let closePuzzleBtn = document.getElementById("close-puzzle");
@@ -6,17 +6,16 @@ let puzzleTimerEl = document.getElementById("timer");
 
 let puzzleInterval; // Интервал для таймера головоломки
 
-// Функция открытия модального окна головоломки
+// Открытие модального окна головоломки
 function openPuzzle() {
   if (puzzleModal) {
     puzzleModal.style.display = "flex";
     document.getElementById("main-content").style.display = "none";
-    // Запускаем головоломку с уровнем "easy" по умолчанию
-    startPuzzle("easy");
+    startPuzzle("easy"); // По умолчанию уровень easy
   }
 }
 
-// Функция закрытия головоломки
+// Закрытие головоломки
 function closePuzzle() {
   if (puzzleModal) {
     puzzleModal.style.display = "none";
@@ -26,11 +25,10 @@ function closePuzzle() {
 }
 closePuzzleBtn.addEventListener("click", closePuzzle);
 
-// Функция генерации головоломки по выбранному уровню
+// Запуск головоломки по выбранному уровню сложности
 function startPuzzle(level) {
-  // Очистка предыдущих элементов
+  // Очистка предыдущего содержимого
   puzzleContainer.innerHTML = "";
-  // Выбор набора цветов в зависимости от сложности
   let colors = [];
   if (level === "easy") {
     colors = ["red", "blue", "green"];
@@ -39,12 +37,10 @@ function startPuzzle(level) {
   } else if (level === "hard") {
     colors = ["red", "blue", "green", "yellow", "purple", "orange"];
   }
-  // Генерация сетки: создаём ячейки, имитирующие "машинки"
   const totalCells = colors.length * 3;
   for (let i = 0; i < totalCells; i++) {
     let cell = document.createElement("div");
     cell.className = "puzzle-cell";
-    // Циклический выбор цвета
     cell.style.backgroundColor = colors[i % colors.length];
     cell.innerText = i + 1;
     cell.style.display = "flex";
@@ -52,13 +48,19 @@ function startPuzzle(level) {
     cell.style.alignItems = "center";
     cell.style.height = "50px";
     cell.style.border = "1px solid #fff";
+    // Добавляем эффект увеличения при наведении
+    cell.addEventListener("mouseover", () => {
+      cell.style.transform = "scale(1.1)";
+    });
+    cell.addEventListener("mouseout", () => {
+      cell.style.transform = "scale(1)";
+    });
     puzzleContainer.appendChild(cell);
   }
-  // Запуск таймера
   startPuzzleTimer();
 }
 
-// Функция таймера головоломки
+// Таймер головоломки
 function startPuzzleTimer() {
   let timeLeft = 60;
   puzzleTimerEl.innerText = timeLeft;

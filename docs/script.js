@@ -8,10 +8,10 @@ let autoClicker = 0;
 const scoreEl = document.getElementById("score");
 const energyEl = document.getElementById("energy");
 
-// Блокируем прокрутку страницы
+// Блокировка прокрутки страницы
 document.body.style.overflow = 'hidden';
 
-// Засекаем время загрузки для отображения loading screen
+// Засекаем время загрузки (для loading screen)
 const startTime = Date.now();
 document.body.classList.add('loading');
 
@@ -19,7 +19,7 @@ window.addEventListener('load', () => {
   loadGameData();
   
   const loadingScreen = document.getElementById('loading-screen');
-  const minDuration = 4000; // минимум 4 секунды
+  const minDuration = 4000;
   const timePassed = Date.now() - startTime;
   const delay = Math.max(0, minDuration - timePassed);
   
@@ -41,22 +41,22 @@ function tap(event) {
     scoreEl.innerText = score;
     energyEl.innerText = energy;
     saveGameData();
-    // Запуск эффекта частиц при клике для дополнительного "вау"
+    // Запуск эффекта частиц при клике для эффекта "вау"
     createParticles(event);
   } else {
     alert("Энергия закончилась! Подождите восстановления.");
   }
 }
 
-// Новый эффект: генерация частиц вокруг точки клика
+// Функция генерации частиц (усиленный эффект)
 function createParticles(event) {
-  const particleCount = 10;
+  const particleCount = 15; // увеличено количество частиц
   const krakenContainer = document.getElementById("kraken-container");
   const rect = krakenContainer.getBoundingClientRect();
   for (let i = 0; i < particleCount; i++) {
     const particle = document.createElement("div");
     particle.className = "particle";
-    // Устанавливаем случайное направление и задержку
+    // Случайное направление и расстояние для каждой частицы
     const angle = Math.random() * 2 * Math.PI;
     const distance = Math.random() * 80 + 20;
     const x = event.clientX - rect.left;
@@ -65,12 +65,11 @@ function createParticles(event) {
     particle.style.top = y + "px";
     particle.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
     krakenContainer.appendChild(particle);
-    // Удаляем частицу после анимации (0.8 сек)
-    setTimeout(() => particle.remove(), 800);
+    setTimeout(() => particle.remove(), 1000);
   }
 }
 
-// Интервал восстановления энергии и начисления автокликов каждую секунду
+// Интервал восстановления энергии и автокликер (каждую секунду)
 setInterval(() => {
   if (energy < 500) {
     energy += energyRegen;
@@ -84,7 +83,7 @@ setInterval(() => {
   saveGameData();
 }, 1000);
 
-/* Функции для работы с Магазином */
+/* Функции для магазина */
 function openShop() {
   document.getElementById("shop-modal").style.display = "flex";
 }
@@ -131,7 +130,7 @@ function buyAutoClicker(amount, cost) {
   }
 }
 
-/* Функции сохранения и загрузки игровых данных через localStorage */
+/* Сохранение и загрузка игровых данных через localStorage */
 function saveGameData() {
   localStorage.setItem("score", score);
   localStorage.setItem("energy", energy);
@@ -162,7 +161,7 @@ document.getElementById("kraken").addEventListener("error", () => {
   alert("Ошибка: Изображение Кракена не загрузилось!");
 });
 
-/* Привязка события для открытия головоломки через кнопку */
+/* Привязка события для открытия головоломки */
 document.getElementById("open-puzzle-btn").addEventListener("click", () => {
   openPuzzle();
 });
