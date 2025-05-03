@@ -4,15 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TapKraken | RGB Edition</title>
+  <!-- Подключаем шрифт для футуристичного вида -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Экран загрузки -->
+  <!-- Загрузочный экран -->
   <div id="loading-screen">
     <img src="loading-screen.webp" alt="Загрузка..." id="loading-image">
   </div>
 
-  <!-- Основное содержимое -->
+  <!-- Основной контент -->
   <div id="main-content" style="display: none;">
     <header id="header">
       <h1>TapKraken</h1>
@@ -24,6 +26,7 @@
       <p>Энергия: <span id="energy">500</span></p>
 
       <div id="kraken-container">
+        <!-- Клик по изображению Кракена вызывает функцию tap() -->
         <img id="kraken" src="kraken.png" alt="Kraken" draggable="false" onclick="tap(event)">
       </div>
 
@@ -33,7 +36,7 @@
       </div>
     </div>
 
-    <!-- Магазин -->
+    <!-- Магазин (старый функционал не удалён) -->
     <div id="shop-modal">
       <div id="shop-content">
         <h2>Магазин</h2>
@@ -56,14 +59,14 @@
         </div>
         <p id="puzzle-timer">Время: <span id="timer">60</span> секунд</p>
         <div id="puzzle-container">
-          <!-- Здесь генерируется головоломка через puzzle.js -->
+          <!-- Здесь через puzzle.js генерируется сетка элементов головоломки -->
         </div>
         <button id="close-puzzle" onclick="closePuzzle()">Назад</button>
       </div>
     </div>
   </div>
   
-  <!-- Подключаем сначала puzzle.js, затем script.js -->
+  <!-- ВАЖНО! Подключаем сначала puzzle.js, затем script.js -->
   <script src="puzzle.js"></script>
   <script src="script.js"></script>
 </body>

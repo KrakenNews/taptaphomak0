@@ -17,12 +17,12 @@ document.body.classList.add('loading');
 
 window.addEventListener('load', () => {
   loadGameData();
-
+  
   const loadingScreen = document.getElementById('loading-screen');
   const minDuration = 4000; // минимум 4 секунды
   const timePassed = Date.now() - startTime;
   const delay = Math.max(0, minDuration - timePassed);
-
+  
   setTimeout(() => {
     loadingScreen.style.opacity = "0";
     setTimeout(() => {
@@ -33,7 +33,7 @@ window.addEventListener('load', () => {
   }, delay);
 });
 
-// Функция, обрабатывающая клик по изображению Кракена (сохранён старый функционал)
+// Функция обработки клика по изображению Кракена
 function tap(event) {
   if (energy > 0) {
     score += tapPower;
@@ -41,13 +41,36 @@ function tap(event) {
     scoreEl.innerText = score;
     energyEl.innerText = energy;
     saveGameData();
-    // Можно добавить дополнительные визуальные эффекты или звуковое сопровождение здесь
+    // Запуск эффекта частиц при клике для дополнительного "вау"
+    createParticles(event);
   } else {
     alert("Энергия закончилась! Подождите восстановления.");
   }
 }
 
-// Восстановление энергии и начисление автокликов каждую секунду
+// Новый эффект: генерация частиц вокруг точки клика
+function createParticles(event) {
+  const particleCount = 10;
+  const krakenContainer = document.getElementById("kraken-container");
+  const rect = krakenContainer.getBoundingClientRect();
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement("div");
+    particle.className = "particle";
+    // Устанавливаем случайное направление и задержку
+    const angle = Math.random() * 2 * Math.PI;
+    const distance = Math.random() * 80 + 20;
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    particle.style.left = x + "px";
+    particle.style.top = y + "px";
+    particle.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
+    krakenContainer.appendChild(particle);
+    // Удаляем частицу после анимации (0.8 сек)
+    setTimeout(() => particle.remove(), 800);
+  }
+}
+
+// Интервал восстановления энергии и начисления автокликов каждую секунду
 setInterval(() => {
   if (energy < 500) {
     energy += energyRegen;

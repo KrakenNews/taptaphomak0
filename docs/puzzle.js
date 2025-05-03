@@ -6,17 +6,17 @@ let puzzleTimerEl = document.getElementById("timer");
 
 let puzzleInterval; // Интервал для таймера головоломки
 
-/* Функция открытия модального окна головоломки */
+// Функция открытия модального окна головоломки
 function openPuzzle() {
   if (puzzleModal) {
     puzzleModal.style.display = "flex";
     document.getElementById("main-content").style.display = "none";
-    // При открытии запускаем головоломку с уровнем "easy" по умолчанию
+    // Запускаем головоломку с уровнем "easy" по умолчанию
     startPuzzle("easy");
   }
 }
 
-/* Функция закрытия головоломки */
+// Функция закрытия головоломки
 function closePuzzle() {
   if (puzzleModal) {
     puzzleModal.style.display = "none";
@@ -26,11 +26,11 @@ function closePuzzle() {
 }
 closePuzzleBtn.addEventListener("click", closePuzzle);
 
-/* Функция запуска головоломки по выбранному уровню */
+// Функция генерации головоломки по выбранному уровню
 function startPuzzle(level) {
-  // Очищаем предыдущий контент
+  // Очистка предыдущих элементов
   puzzleContainer.innerHTML = "";
-  // Выбор набора цветов в зависимости от уровня сложности
+  // Выбор набора цветов в зависимости от сложности
   let colors = [];
   if (level === "easy") {
     colors = ["red", "blue", "green"];
@@ -39,8 +39,8 @@ function startPuzzle(level) {
   } else if (level === "hard") {
     colors = ["red", "blue", "green", "yellow", "purple", "orange"];
   }
-  // Генерация сетки: создаём блоки (ячейки), имитирующие "машинки"
-  const totalCells = colors.length * 3; // число ячеек определяется произвольно
+  // Генерация сетки: создаём ячейки, имитирующие "машинки"
+  const totalCells = colors.length * 3;
   for (let i = 0; i < totalCells; i++) {
     let cell = document.createElement("div");
     cell.className = "puzzle-cell";
@@ -54,12 +54,11 @@ function startPuzzle(level) {
     cell.style.border = "1px solid #fff";
     puzzleContainer.appendChild(cell);
   }
-  
-  // Запуск таймера для головоломки
+  // Запуск таймера
   startPuzzleTimer();
 }
 
-/* Функция запуска таймера для головоломки */
+// Функция таймера головоломки
 function startPuzzleTimer() {
   let timeLeft = 60;
   puzzleTimerEl.innerText = timeLeft;
