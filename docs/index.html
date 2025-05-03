@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TapKraken 🐙</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Экран загрузки -->
+    <div id="loading-screen">
+        <img src="loading-screen.webp" alt="Загрузка..." id="loading-image">
+    </div>
+
+    <!-- Основное содержимое -->
+    <div id="main-content" style="display: none;">
+        <h1>TapKraken 🐙</h1>
+        <div id="game-container">
+            <p>Очки: <span id="score">0</span></p>
+            <p>Энергия: <span id="energy">500</span></p>
+
+            <div id="kraken-container">
+                <img id="kraken" src="kraken_1.png?v=1" alt="Kraken" draggable="false" onclick="tap(event)">
+            </div>
+
+            <div id="menu-buttons">
+                <button onclick="openShop()">Магазин</button>
+                <button id="open-puzzle-btn">Головоломка</button> <!-- Оставляем только эту кнопку -->
+            </div>
+        </div>
+
+        <!-- Магазин -->
+        <div id="shop-modal">
+            <div id="shop-content">
+                <h2>Магазин</h2>
+                <div class="shop-item" onclick="buyUpgrade(1, 10, 50)">+1 очко/тап (-50 энергии) - 10 очков</div>
+                <div class="shop-item" onclick="buyUpgrade(5, 50, 100)">+5 очков/тап (-100 энергии) - 50 очков</div>
+                <div class="shop-item" onclick="buyEnergyRegen(1, 30)">+1 к восстановлению энергии - 30 очков</div>
+                <div class="shop-item" onclick="buyAutoClicker(1, 100)">Автокликер (+1 очко/сек) - 100 очков</div>
+                <button id="close-shop" onclick="closeShop()">Закрыть</button>
+            </div>
+        </div>
+
+        <!-- Головоломка -->
+        <div id="puzzle-modal" style="display: none;">
+            <div id="puzzle-content">
+                <h2>Головоломка: Вытаскивание машины</h2>
+                <div id="puzzle-levels">
+                    <button onclick="startPuzzle('easy')">Лёгкий</button>
+                    <button onclick="startPuzzle('medium')">Средний</button>
+                    <button onclick="startPuzzle('hard')">Сложный</button>
+                </div>
+                <p id="puzzle-timer">Время: <span id="timer">60</span> секунд</p>
+                <div class="parking-lot" id="puzzle-container">
+                    <!-- Машины рендерятся через JS -->
+                </div>
+                <button id="close-puzzle" onclick="closePuzzle()">Назад</button>
+            </div>
+        </div>
+
+        <!-- Головоломка с машинками -->
+        <div id="car-puzzle-modal" style="display: none;">
+            <div id="car-puzzle-content">
+                <h2>Головоломка с Машинками</h2>
+                <div id="car-puzzle-container">
+                    <div class="car red" data-id="1"></div>
+                    <div class="car blue" data-id="2"></div>
+                    <div class="car green" data-id="3"></div>
+                    <div class="car yellow" data-id="4"></div>
+                </div>
+                <button id="start-car-puzzle-btn">Начать игру</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Удаляем лишнюю кнопку -->
+    <!-- <button id="puzzle-button">Головоломка</button> --> <!-- Убрал эту кнопку -->
+
+    <script src="script.js"></script>
+    <script src="puzzle.js"></script>
+</body>
+</html>
