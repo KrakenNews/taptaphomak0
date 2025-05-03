@@ -1,140 +1,76 @@
-// Глобальные переменные
+// Элементы модального окна головоломки и связанные узлы
 let puzzleModal = document.getElementById("puzzle-modal");
-let carPuzzleModal = document.getElementById("car-puzzle-modal");
-let openPuzzleBtn = document.getElementById("open-puzzle-btn");
-let closePuzzleBtn = document.getElementById("close-puzzle");
 let puzzleContainer = document.getElementById("puzzle-container");
-let puzzleTimer = document.getElementById("timer");
-let puzzleLevels = document.getElementById("puzzle-levels");
-let puzzleCars = [];
+let closePuzzleBtn = document.getElementById("close-puzzle");
+let puzzleTimerEl = document.getElementById("timer");
 
-// Функция для открытия головоломки
+let puzzleInterval; // Интервал для таймера головоломки
+
+/* Функция открытия модального окна головоломки */
 function openPuzzle() {
-    puzzleModal.style.display = "block";
+  if (puzzleModal) {
+    puzzleModal.style.display = "flex";
     document.getElementById("main-content").style.display = "none";
-    resetPuzzle();  // Сбросить настройки головоломки перед её открытием
+    // При открытии запускаем головоломку с уровнем "easy" по умолчанию
+    startPuzzle("easy");
+  }
 }
 
-// Функция для закрытия головоломки
+/* Функция закрытия головоломки */
 function closePuzzle() {
+  if (puzzleModal) {
     puzzleModal.style.display = "none";
     document.getElementById("main-content").style.display = "block";
+    clearInterval(puzzleInterval);
+  }
 }
-
-// Добавляем обработчик для кнопки "Головоломка"
-openPuzzleBtn.addEventListener("click", openPuzzle);
-
-// Добавляем обработчик для кнопки "Назад" в головоломке
 closePuzzleBtn.addEventListener("click", closePuzzle);
 
-// Функция для запуска головоломки с определённым уровнем сложности
+/* Функция запуска головоломки по выбранному уровню */
 function startPuzzle(level) {
-    // Открытие контейнера для машин
-    puzzleContainer.innerHTML = "";
-    createPuzzle(level);
-    startTimer();
+  // Очищаем предыдущий контент
+  puzzleContainer.innerHTML = "";
+  // Выбор набора цветов в зависимости от уровня сложности
+  let colors = [];
+  if (level === "easy") {
+    colors = ["red", "blue", "green"];
+  } else if (level === "medium") {
+    colors = ["red", "blue", "green", "yellow"];
+  } else if (level === "hard") {
+    colors = ["red", "blue", "green", "yellow", "purple", "orange"];
+  }
+  // Генерация сетки: создаём блоки (ячейки), имитирующие "машинки"
+  const totalCells = colors.length * 3; // число ячеек определяется произвольно
+  for (let i = 0; i < totalCells; i++) {
+    let cell = document.createElement("div");
+    cell.className = "puzzle-cell";
+    // Циклический выбор цвета
+    cell.style.backgroundColor = colors[i % colors.length];
+    cell.innerText = i + 1;
+    cell.style.display = "flex";
+    cell.style.justifyContent = "center";
+    cell.style.alignItems = "center";
+    cell.style.height = "50px";
+    cell.style.border = "1px solid #fff";
+    puzzleContainer.appendChild(cell);
+  }
+  
+  // Запуск таймера для головоломки
+  startPuzzleTimer();
 }
 
-// Функция для создания головоломки
-function createPuzzle(level) {
-    // В зависимости от уровня сложности, создаются разные количества машин
-    let cars = [];
-    if (level === "easy") {
-        cars = ["red", "blue", "green"];
-    } else if (level === "medium") {
-        cars = ["red", "blue", "green", "yellow"];
-    } else if (level === "hard") {
-        cars = ["red", "blue", "green", "yellow", "purple", "orange"];
+/* Функция запуска таймера для головоломки */
+function startPuzzleTimer() {
+  let timeLeft = 60;
+  puzzleTimerEl.innerText = timeLeft;
+  clearInterval(puzzleInterval);
+  puzzleInterval = setInterval(() => {
+    timeLeft--;
+    puzzleTimerEl.innerText = timeLeft;
+    if (timeLeft <= 0) {
+      clearInterval(puzzleInterval);
+      alert("Время вышло!");
+      closePuzzle();
     }
-
-    // Рендерим машины
-    cars.forEach((color, index) => {
-        let car = document.createElement("div");
-        car.classList.add("car", color);
-        car.setAttribute("data-id", index);
-        puzzleContainer.appendChild(car);
-    });
-
-    // Добавление анимации с подсветкой
-    addCarGlowEffect();
+  }, 1000);
 }
-
-// Функция для запуска таймера
-let timerInterval;
-function startTimer() {
-    let timeLeft = 60; // Время в секундах
-    puzzleTimer.textContent = timeLeft;
-
-    // Запускаем таймер
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        puzzleTimer.textContent = timeLeft;
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            alert("Время вышло!");
-            closePuzzle();
-        }
-    }, 1000);
-}
-
-// Функция для сброса головоломки
-function resetPuzzle() {
-    clearInterval(timerInterval); // Останавливаем старый таймер, если был
-    puzzleTimer.textContent = 60; // Сбросить таймер
-}
-
-// Функция для открытия головоломки с машинками
-function openCarPuzzle() {
-    carPuzzleModal.style.display = "block";
-    document.getElementById("main-content").style.display = "none";
-}
-
-// Функция для закрытия головоломки с машинками
-function closeCarPuzzle() {
-    carPuzzleModal.style.display = "none";
-    document.getElementById("main-content").style.display = "block";
-}
-
-// Функция для начала игры с машинками
-document.getElementById("start-car-puzzle-btn").addEventListener("click", () => {
-    alert("Начинаем головоломку с машинками!");
-    closeCarPuzzle();
-});
-
-// Функция для перемещения машинок (например, для головоломки с парковкой)
-document.querySelectorAll(".car").forEach(car => {
-    car.addEventListener("click", (event) => {
-        let carElement = event.target;
-        let currentPosition = carElement.style.left || "0px";
-        let newPosition = parseInt(currentPosition) + 50 + "px";
-        carElement.style.left = newPosition;
-    });
-});
-
-// Функция для добавления эффекта подсветки на машины
-function addCarGlowEffect() {
-    const cars = document.querySelectorAll(".car");
-    cars.forEach(car => {
-        car.classList.add("animate"); // Добавляем анимацию с подсветкой
-    });
-}
-
-// Функция для активации RGB подсветки для машины
-function activateRGBGlowEffect() {
-    const cars = document.querySelectorAll(".car");
-    cars.forEach(car => {
-        car.addEventListener("mouseenter", () => {
-            car.style.transition = "box-shadow 0.5s ease-in-out, transform 0.5s";
-            car.style.boxShadow = "0 0 25px rgba(255, 0, 255, 1), 0 0 35px rgba(0, 255, 255, 1)";
-            car.style.transform = "scale(1.05)";
-        });
-
-        car.addEventListener("mouseleave", () => {
-            car.style.boxShadow = "none";
-            car.style.transform = "scale(1)";
-        });
-    });
-}
-
-// Включаем эффект подсветки для машин
-activateRGBGlowEffect();

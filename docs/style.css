@@ -1,9 +1,12 @@
-/* Global Styles */
+/* ------------------------- */
+/* 1. Общие стили и фон     */
+/* ------------------------- */
 html, body {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
+    /* Сохраняем оригинальный темный градиент, добавляем RGB акценты в комментариях */
     background: linear-gradient(to bottom, #0a0f2c, #0b0010);
     background-attachment: fixed;
     overflow: hidden;
@@ -32,7 +35,9 @@ body.loaded #main-content {
     min-height: 100vh;
 }
 
-/* Headings */
+/* ------------------------- */
+/* 2. Заголовки             */
+/* ------------------------- */
 h1 {
     color: #ffcc00;
     margin-top: 20px;
@@ -40,52 +45,31 @@ h1 {
     text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
 }
 
-/* Game Container */
+/* ------------------------- */
+/* 3. Игровой контейнер     */
+/* ------------------------- */
 #game-container {
     margin: 0 auto;
     padding: 20px;
     max-width: 600px;
+    /* Новый градиент с оттенками RGB (синий/красный) для усиления эффекта */
     background: linear-gradient(145deg, #330000, #001a33);
     border-radius: 15px;
     box-shadow: 0 0 20px rgba(0, 0, 255, 0.5);
     border: none;
 }
 
-/* Kraken Container с эффектом стробоскопа */
+/* ------------------------- */
+/* 4. Контейнер Кракена     */
+/* ------------------------- */
 #kraken-container {
     display: flex;
     justify-content: center;
     align-items: center;
     margin-top: 20px;
     position: relative;
-    overflow: hidden;
 }
 
-@keyframes strobeFlash {
-  0%, 20%, 40%, 60%, 80%, 100% {
-    opacity: 0;
-  }
-  10%, 30%, 50%, 70%, 90% {
-    opacity: 1;
-  }
-}
-
-#kraken-container::after {
-    content: "";
-    position: absolute;
-    top: -10%;
-    left: -10%;
-    width: 120%;
-    height: 120%;
-    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,0,0,0.8) 100%);
-    filter: blur(15px);
-    border-radius: 50%;
-    pointer-events: none;
-    animation: strobeFlash 1.5s infinite;
-    z-index: -1;
-}
-
-/* Kraken Image */
 #kraken {
     max-width: 300px;
     width: 100%;
@@ -97,11 +81,33 @@ h1 {
 }
 
 #kraken:active {
-    transform: scale(1.15);
-    box-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 0 50px rgba(255, 0, 0, 0.8);
+    transform: scale(1.1);
 }
 
-/* Menu Buttons с эффектами */
+/* Эффект вспышки за Кракеном */
+#kraken-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 0, 0, 0.5), transparent);
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    transform: scale(0.8);
+    z-index: -1;
+}
+
+#kraken-container:active::after {
+    opacity: 1;
+    transform: scale(1.5);
+}
+
+/* ------------------------- */
+/* 5. Кнопки Меню          */
+/* ------------------------- */
 #menu-buttons {
     display: flex;
     justify-content: center;
@@ -113,16 +119,14 @@ h1 {
     font-size: 18px;
     padding: 10px 20px;
     margin: 10px;
+    /* Новый градиент с RGB: от темного синего к глубокому красному */
     background: linear-gradient(145deg, #003366, #330000);
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: transform 0.2s, background-color 0.3s;
-    box-shadow: 0 0 10px rgba(0, 0, 255, 0.5);
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
 }
 
 #menu-buttons button:hover {
@@ -135,26 +139,10 @@ h1 {
     background-color: #003f7f;
 }
 
-#menu-buttons button::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(45deg, rgba(255,255,255,0.6), rgba(255,0,0,0.6));
-    opacity: 0;
-    transform: scale(2);
-    transition: opacity 0.3s ease-in-out;
-    z-index: -1;
-}
-
-#menu-buttons button:hover::after {
-    opacity: 1;
-}
-
-/* Модальные окна и головоломки */
-#shop-modal, #puzzle-modal, #car-puzzle-modal {
+/* ------------------------- */
+/* 6. Магазин и модальные окна */
+/* ------------------------- */
+#shop-modal, #puzzle-modal {
     display: none;
     position: fixed;
     top: 0;
@@ -165,16 +153,6 @@ h1 {
     z-index: 1000;
     justify-content: center;
     align-items: center;
-    animation: modalPulse 3s infinite alternate;
-}
-
-@keyframes modalPulse {
-  0% {
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 0, 0, 0.5);
-  }
-  100% {
-    box-shadow: 0 0 25px rgba(255, 255, 255, 1), 0 0 40px rgba(255, 0, 0, 0.9);
-  }
 }
 
 #shop-content, #puzzle-content {
@@ -188,7 +166,6 @@ h1 {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
-/* Shop Items */
 .shop-item {
     margin: 10px;
     padding: 10px;
@@ -201,7 +178,9 @@ h1 {
     background-color: #555;
 }
 
-/* Контейнер для головоломки (парковка) */
+/* ------------------------- */
+/* 7. Головоломка           */
+/* ------------------------- */
 #puzzle-container {
     position: relative;
     width: 80%;
@@ -216,14 +195,11 @@ h1 {
     box-shadow: 0 0 15px rgba(0, 0, 255, 0.7);
     overflow: hidden;
     transition: background 0.3s ease;
-    cursor: grab;
 }
 
-#puzzle-container:active {
-    cursor: grabbing;
-}
-
-/* Элементы машин для головоломки */
+/* ------------------------- */
+/* 8. Стили машинок для пазла */
+/* ------------------------- */
 .car {
     position: relative;
     width: 60px;
@@ -293,17 +269,22 @@ h1 {
     }
 }
 
-.car.moveable {
-    cursor: pointer;
-    transition: transform 0.3s ease;
+/* Кнопка закрытия головоломки */
+#close-puzzle {
+    display: block;
+    margin: 10px auto 0;
+    background-color: #ff4d4d;
+    color: white;
 }
 
-/* Эффект всплеска при клике */
+/* ------------------------- */
+/* 9. Эффект всплеска        */
+/* ------------------------- */
 .splash-effect {
     position: absolute;
     width: 50px;
     height: 50px;
-    background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,0,0,0.8));
+    background: rgba(255, 255, 0, 0.5);
     border-radius: 50%;
     animation: splash 1s ease-out;
     pointer-events: none;
@@ -320,7 +301,39 @@ h1 {
     }
 }
 
-/* Loading Screen */
+/* ------------------------- */
+/* 10. Уведомления           */
+/* ------------------------- */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    10%, 90% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
+/* ------------------------- */
+/* 11. Loading Screen        */
+/* ------------------------- */
 #loading-screen {
     position: fixed;
     top: 0;
@@ -348,7 +361,9 @@ h1 {
     pointer-events: none;
 }
 
-/* Общие стили для кнопок */
+/* ------------------------- */
+/* 12. Общие стили для кнопок */
+/* ------------------------- */
 button {
     font-size: 18px;
     padding: 10px 20px;
@@ -370,4 +385,20 @@ button:hover {
 #timer {
     font-size: 24px;
     color: #f44336;
+}
+
+/* ------------------------- */
+/* 13. Дополнительные стили для перемещения машинок */
+/* ------------------------- */
+#puzzle-container {
+    cursor: grab;
+}
+
+#puzzle-container:active {
+    cursor: grabbing;
+}
+
+.car.moveable {
+    cursor: pointer;
+    transition: transform 0.3s ease;
 }
