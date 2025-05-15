@@ -6,12 +6,24 @@
   <title>TapKraken | RGB Edition</title>
   <!-- Футуристичный шрифт для усиления эффекта -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome для иконок -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
+  <!-- SEO метатеги -->
+  <meta name="description" content="TapKraken - захватывающая кликер-игра с Кракеном в сине-красно-белой гамме. Собирай монеты, улучшай своего Кракена и соревнуйся с друзьями!">
+  <!-- Open Graph tags -->
+  <meta property="og:title" content="TapKraken | RGB Edition" />
+  <meta property="og:description" content="Кликай на Кракена, собирай монеты и стань лучшим в мире TapKraken!" />
+  <meta property="og:type" content="website" />
 </head>
 <body>
   <!-- Загрузочный экран с анимацией -->
   <div id="loading-screen">
-    <img src="loading-screen.webp" alt="Загрузка..." id="loading-image">
+    <img src="attached_assets/loading-screen.webp" alt="Загрузка..." id="loading-image">
+    <div class="loading-progress-container">
+      <div id="loading-progress-bar"></div>
+    </div>
+    <h1 class="loading-title">TAPKRAKEN</h1>
   </div>
   
   <!-- Дополнительный контейнер для фоновых частиц -->
@@ -19,57 +31,336 @@
 
   <!-- Основной контент -->
   <div id="main-content" style="display: none;">
-    <header id="header">
-      <h1>TapKraken</h1>
-      <p>Нажимай на Кракена и собирай Kraken Coin!</p>
-    </header>
+    <!-- Верхняя панель с показателями игрока -->
+    <div class="top-bar">
+      <div class="currency-display">
+        <div class="coin-icon">
+          <i class="fas fa-bolt"></i>
+        </div>
+        <span id="score">0</span>
+      </div>
+      <div class="stats-container">
+        <div class="stat-item">
+          <i class="fas fa-coins"></i>
+          <span id="income-per-hour">0</span> Доход/час
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-hand-pointer"></i>
+          <span id="income-per-tap">1</span> Доход/тап
+          <div class="multiplier">
+            <i class="fas fa-times"></i>
+            <span id="tap-multiplier">1</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <div id="game-container">
-      <p>Очки: <span id="score">0</span></p>
-      <p>Энергия: <span id="energy">500</span></p>
+    <!-- Панель энергии -->
+    <div class="energy-container">
+      <i class="fas fa-bolt energy-icon"></i>
+      <div class="energy-bar-container">
+        <div id="energy-bar" class="energy-bar"></div>
+      </div>
+      <span id="energy-text"><span id="energy">500</span>/<span id="max-energy">500</span></span>
+    </div>
 
+    <!-- Основная игровая зона -->
+    <div class="game-area">
+      <!-- Левое меню -->
+      <div class="side-menu left-menu">
+        <div class="menu-button friends-button" onclick="openFriends()">
+          <div class="indicator">5</div>
+          <i class="fas fa-users"></i>
+          <span>Друзья</span>
+        </div>
+        <div class="menu-button tasks-button" onclick="openTasks()">
+          <div class="indicator">3</div>
+          <i class="fas fa-gift"></i>
+          <span>Задания</span>
+        </div>
+        <div class="menu-button lucky-drive" onclick="openLuckyDrive()">
+          <div class="new-badge">NEW</div>
+          <i class="fas fa-car"></i>
+          <span>Lucky Drive</span>
+        </div>
+      </div>
+
+      <!-- Центральная зона с Кракеном -->
       <div id="kraken-container">
         <!-- При клике вызывается tap(event) -->
-        <img id="kraken" src="images/kraken_1.png" alt="Kraken" draggable="false" onclick="tap(event)">
+        <img id="kraken" src="attached_assets/kraken_1.png" alt="Kraken" draggable="false" onclick="tap(event)">
+        <!-- Контейнер для визуальных эффектов -->
+        <div id="tap-effects"></div>
       </div>
 
-      <div id="menu-buttons">
-        <button onclick="openShop()">Магазин</button>
-        <button id="open-puzzle-btn">Головоломка</button>
-      </div>
-    </div>
-
-    <!-- Магазин (без удаления старого функционала) -->
-    <div id="shop-modal">
-      <div id="shop-content">
-        <h2>Магазин</h2>
-        <div class="shop-item" onclick="buyUpgrade(1, 10, 50)">+1 очко/тап (-50 энергии) — 10 очков</div>
-        <div class="shop-item" onclick="buyUpgrade(5, 50, 100)">+5 очков/тап (-100 энергии) — 50 очков</div>
-        <div class="shop-item" onclick="buyEnergyRegen(1, 30)">+1 к восстановлению энергии — 30 очков</div>
-        <div class="shop-item" onclick="buyAutoClicker(1, 100)">Автокликер (+1 очко/сек) — 100 очков</div>
-        <button id="close-shop" onclick="closeShop()">Закрыть</button>
-      </div>
-    </div>
-
-    <!-- Модальное окно головоломки -->
-    <div id="puzzle-modal">
-      <div id="puzzle-content">
-        <h2>Головоломка: Вытаскивание машины</h2>
-        <div id="puzzle-levels">
-          <button onclick="startPuzzle('easy')">Лёгкий</button>
-          <button onclick="startPuzzle('medium')">Средний</button>
-          <button onclick="startPuzzle('hard')">Сложный</button>
+      <!-- Правое меню -->
+      <div class="side-menu right-menu">
+        <div class="menu-button shop-button" onclick="openShop()">
+          <i class="fas fa-store"></i>
+          <span>Магазин</span>
         </div>
-        <p id="puzzle-timer">Время: <span id="timer">60</span> секунд</p>
-        <div id="puzzle-container">
-          <!-- Генерация сетки головоломки через puzzle.js -->
+        <div class="menu-button puzzle-button" onclick="openPuzzle()">
+          <i class="fas fa-puzzle-piece"></i>
+          <span>Головоломка</span>
         </div>
-        <button id="close-puzzle" onclick="closePuzzle()">Назад</button>
+        <div class="menu-button locked">
+          <i class="fas fa-lock"></i>
+          <span>Скоро</span>
+        </div>
       </div>
     </div>
+
+    <!-- Нижняя навигация -->
+    <div class="bottom-nav">
+      <div class="nav-button" data-tab="city">
+        <div class="nav-icon">
+          <i class="fas fa-city"></i>
+        </div>
+        <span>Город</span>
+      </div>
+      <div class="nav-button active" data-tab="home">
+        <div class="nav-icon">
+          <i class="fas fa-home"></i>
+        </div>
+        <span>Главная</span>
+      </div>
+      <div class="nav-button" data-tab="games">
+        <div class="nav-icon">
+          <i class="fas fa-gamepad"></i>
+          <div class="new-badge-small">N</div>
+        </div>
+        <span>Мини-игры</span>
+      </div>
+    </div>
+
+    <!-- Модальные окна -->
+    <!-- Магазин -->
+    <div id="shop-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Магазин</h2>
+          <button class="close-button" onclick="closeShop()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="modal-tabs">
+          <div class="tab active" data-tab="upgrades">Улучшения</div>
+          <div class="tab" data-tab="boosters">Бустеры</div>
+          <div class="tab" data-tab="special">Особые</div>
+        </div>
+        
+        <div class="modal-body">
+          <div class="tab-content active" id="upgrades-tab">
+            <div class="shop-item" onclick="buyUpgrade(1, 10, 50)">
+              <div class="shop-item-icon"><i class="fas fa-hand-pointer"></i></div>
+              <div class="shop-item-info">
+                <div class="shop-item-title">+1 очко/тап</div>
+                <div class="shop-item-desc">-50 энергии</div>
+              </div>
+              <div class="shop-item-price">
+                <i class="fas fa-coins"></i> 10
+              </div>
+            </div>
+            
+            <div class="shop-item" onclick="buyUpgrade(5, 50, 100)">
+              <div class="shop-item-icon"><i class="fas fa-hand-pointer"></i></div>
+              <div class="shop-item-info">
+                <div class="shop-item-title">+5 очков/тап</div>
+                <div class="shop-item-desc">-100 энергии</div>
+              </div>
+              <div class="shop-item-price">
+                <i class="fas fa-coins"></i> 50
+              </div>
+            </div>
+            
+            <div class="shop-item" onclick="buyEnergyRegen(1, 30)">
+              <div class="shop-item-icon"><i class="fas fa-bolt"></i></div>
+              <div class="shop-item-info">
+                <div class="shop-item-title">+1 к восстановлению энергии</div>
+                <div class="shop-item-desc">Быстрее восполняйте энергию</div>
+              </div>
+              <div class="shop-item-price">
+                <i class="fas fa-coins"></i> 30
+              </div>
+            </div>
+            
+            <div class="shop-item" onclick="buyAutoClicker(1, 100)">
+              <div class="shop-item-icon"><i class="fas fa-robot"></i></div>
+              <div class="shop-item-info">
+                <div class="shop-item-title">Автокликер</div>
+                <div class="shop-item-desc">+1 очко/сек автоматически</div>
+              </div>
+              <div class="shop-item-price">
+                <i class="fas fa-coins"></i> 100
+              </div>
+            </div>
+          </div>
+          
+          <div class="tab-content" id="boosters-tab">
+            <div class="shop-item" onclick="buyBooster('double', 200)">
+              <div class="shop-item-icon"><i class="fas fa-rocket"></i></div>
+              <div class="shop-item-info">
+                <div class="shop-item-title">2x Множитель (1ч)</div>
+                <div class="shop-item-desc">Удваивает доход на час</div>
+              </div>
+              <div class="shop-item-price">
+                <i class="fas fa-coins"></i> 200
+              </div>
+            </div>
+            
+            <div class="shop-item" onclick="buyBooster('energy', 150)">
+              <div class="shop-item-icon"><i class="fas fa-battery-full"></i></div>
+              <div class="shop-item-info">
+                <div class="shop-item-title">Безлимитная энергия (30мин)</div>
+                <div class="shop-item-desc">Энергия не тратится</div>
+              </div>
+              <div class="shop-item-price">
+                <i class="fas fa-coins"></i> 150
+              </div>
+            </div>
+          </div>
+          
+          <div class="tab-content" id="special-tab">
+            <div class="shop-item premium-item" onclick="buyPremium(500)">
+              <div class="shop-item-icon"><i class="fas fa-crown"></i></div>
+              <div class="shop-item-info">
+                <div class="shop-item-title">VIP Статус</div>
+                <div class="shop-item-desc">+50% к доходу навсегда</div>
+              </div>
+              <div class="shop-item-price">
+                <i class="fas fa-coins"></i> 500
+              </div>
+            </div>
+            
+            <div class="shop-item coming-soon">
+              <div class="shop-item-icon"><i class="fas fa-hourglass"></i></div>
+              <div class="shop-item-info">
+                <div class="shop-item-title">Скоро в продаже</div>
+                <div class="shop-item-desc">Новые предметы появятся здесь</div>
+              </div>
+              <div class="shop-item-price">
+                <i class="fas fa-coins"></i> ???
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Головоломка -->
+    <div id="puzzle-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Головоломка</h2>
+          <button class="close-button" onclick="closePuzzle()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="puzzle-info">
+          <div class="puzzle-difficulty">
+            <button class="difficulty-btn active" onclick="startPuzzle('easy')">Лёгкий</button>
+            <button class="difficulty-btn" onclick="startPuzzle('medium')">Средний</button>
+            <button class="difficulty-btn" onclick="startPuzzle('hard')">Сложный</button>
+          </div>
+          
+          <div class="puzzle-stats">
+            <div class="puzzle-timer">
+              <i class="fas fa-clock"></i>
+              <span id="timer">60</span> сек
+            </div>
+            <div class="puzzle-reward">
+              <i class="fas fa-trophy"></i>
+              Награда: <span id="puzzle-reward">50</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-body">
+          <div id="puzzle-container" class="puzzle-grid"></div>
+          <div class="puzzle-progress-container">
+            <div id="puzzle-progress" class="puzzle-progress-bar"></div>
+          </div>
+          <p class="puzzle-tip">Соберите цвета в ряды для получения бонусов. Свайпайте ячейки для перемещения.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Задания -->
+    <div id="tasks-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Задания</h2>
+          <button class="close-button" onclick="closeTasks()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="modal-body">
+          <div id="tasks-container">
+            <!-- Задания будут добавлены через JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Друзья -->
+    <div id="friends-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Друзья</h2>
+          <button class="close-button" onclick="closeFriends()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="friends-search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Поиск друзей..." id="friends-search-input">
+          </div>
+          
+          <div id="friends-container">
+            <!-- Список друзей будет добавлен через JavaScript -->
+          </div>
+          
+          <button class="invite-friend-btn">
+            <i class="fas fa-user-plus"></i>
+            Пригласить друга
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lucky Drive -->
+    <div id="lucky-drive-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Lucky Drive</h2>
+          <button class="close-button" onclick="closeLuckyDrive()"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="lucky-drive-container">
+            <p>Крути колесо удачи и выигрывай призы!</p>
+            <div class="wheel-container">
+              <div id="wheel" class="wheel">
+                <!-- Сектора колеса будут добавлены через JavaScript -->
+              </div>
+              <button id="spin-button" class="spin-button" onclick="spinWheel()">
+                <i class="fas fa-play"></i> Крутить
+              </button>
+            </div>
+            <div class="prize-history">
+              <h3>История призов</h3>
+              <div id="prize-history-list">
+                <!-- История призов будет добавлена через JavaScript -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div id="notification-container"></div>
+
   </div>
   
-  <!-- Важно: сначала puzzle.js, затем script.js -->
+  <!-- Скрипты -->
   <script src="puzzle.js"></script>
   <script src="script.js"></script>
 </body>

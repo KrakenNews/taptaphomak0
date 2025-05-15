@@ -1,461 +1,1197 @@
 /* ==========================================================================
    1. Сброс и общие стили
    ========================================================================== */
-   html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    /* Тёмный градиент с глубиной */
-    background: linear-gradient(to bottom, #0a0f2c, #0b0010);
-    background-attachment: fixed;
-    overflow: hidden;
-  }
-  
-  body {
-    font-family: 'Orbitron', 'Arial', sans-serif;
-    text-align: center;
-    color: #ffcccc;
-  }
-  
-  body.loading {
-    overflow: hidden;
-  }
-  
-  body.loading #game-container,
-  body.loading h1 {
-    visibility: hidden;
-  }
-  
-  body.loaded #main-content {
-    display: flex;
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  /* Тёмный градиент с глубиной в сине-красной гамме */
+  background: linear-gradient(135deg, #0a1535 0%, #1a0a20 100%);
+  background-attachment: fixed;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+
+body {
+  font-family: 'Orbitron', 'Arial', sans-serif;
+  color: #ffffff;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+button {
+  font-family: 'Orbitron', 'Arial', sans-serif;
+  cursor: pointer;
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ==========================================================================
+   2. Загрузочный экран
+   ========================================================================== */
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #050d24 0%, #140519 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease;
+}
+
+#loading-image {
+  width: auto;
+  height: 70vh;
+  max-height: 70vh;
+  object-fit: contain;
+  filter: drop-shadow(0 0 20px rgba(255, 0, 0, 0.5)) drop-shadow(0 0 40px rgba(0, 0, 255, 0.5));
+  animation: pulse 2s infinite alternate;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.8; transform: scale(0.98); filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.4)) drop-shadow(0 0 20px rgba(0, 0, 255, 0.4)); }
+  100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 20px rgba(255, 0, 0, 0.8)) drop-shadow(0 0 40px rgba(0, 0, 255, 0.8)); }
+}
+
+.loading-title {
+  margin-top: 20px;
+  font-size: 36px;
+  color: transparent;
+  background: linear-gradient(90deg, #ff0033, #ffffff, #0066ff);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: gradientText 2s linear infinite;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.7), 0 0 20px rgba(0, 0, 255, 0.7);
+}
+
+@keyframes gradientText {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+.loading-progress-container {
+  width: 60%;
+  max-width: 300px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  margin-top: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+#loading-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #ff0033, #ffffff, #0066ff);
+  background-size: 200% auto;
+  animation: gradientProgress 2s linear infinite, loadingProgress 4s ease forwards;
+  border-radius: 4px;
+}
+
+@keyframes gradientProgress {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes loadingProgress {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+/* ==========================================================================
+   3. Основной контент
+   ========================================================================== */
+#main-content {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+#main-content.active {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   4. Верхняя панель
+   ========================================================================== */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.currency-display {
+  display: flex;
+  align-items: center;
+}
+
+.coin-icon {
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #ff0033 0%, #0066ff 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.5), 0 0 20px rgba(0, 0, 255, 0.5);
+}
+
+.coin-icon i {
+  color: white;
+  font-size: 18px;
+}
+
+#score {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+}
+
+.stats-container {
+  display: flex;
+  gap: 15px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.stat-item i {
+  color: #ffcc00;
+  margin-right: 5px;
+}
+
+.multiplier {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0 4px;
+  border-radius: 10px;
+  font-size: 10px;
+}
+
+.multiplier i {
+  color: white;
+  margin-right: 3px;
+  font-size: 8px;
+}
+
+/* ==========================================================================
+   5. Панель энергии
+   ========================================================================== */
+.energy-container {
+  display: flex;
+  align-items: center;
+  padding: 8px 15px;
+  gap: 10px;
+}
+
+.energy-icon {
+  color: #ffcc00;
+}
+
+.energy-bar-container {
+  flex: 1;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.energy-bar {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #00ccff, #0066ff);
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+#energy-text {
+  font-size: 12px;
+  color: white;
+}
+
+/* ==========================================================================
+   6. Основная игровая зона
+   ========================================================================== */
+.game-area {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   7. Боковые меню
+   ========================================================================== */
+.side-menu {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  padding: 0 15px;
+}
+
+.left-menu {
+  left: 0;
+}
+
+.right-menu {
+  right: 0;
+}
+
+.menu-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.05) 100%);
+  box-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.menu-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(0, 102, 255, 0.8);
+}
+
+.menu-button:active {
+  transform: scale(0.95);
+}
+
+.menu-button i {
+  font-size: 22px;
+  margin-bottom: 3px;
+  color: white;
+}
+
+.menu-button span {
+  font-size: 10px;
+  white-space: nowrap;
+  color: white;
+  opacity: 0.8;
+}
+
+.menu-button.locked {
+  background: rgba(100, 100, 100, 0.3);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.indicator {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 20px;
+  height: 20px;
+  background: #ff3b30;
+  border-radius: 50%;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.new-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 8px;
+  background: #ff3b30;
+  color: white;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+/* ==========================================================================
+   8. Кракен и эффекты
+   ========================================================================== */
+#kraken-container {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: float 3s ease-in-out infinite;
+  cursor: pointer;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+#kraken {
+  max-width: 100%;
+  max-height: 100%;
+  transition: transform 0.2s ease;
+  filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.3)) drop-shadow(0 0 30px rgba(0, 0, 255, 0.3));
+}
+
+#kraken:active {
+  transform: scale(1.1);
+}
+
+#tap-effects {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.8;
+  animation: particleFade 0.8s forwards;
+}
+
+@keyframes particleFade {
+  0% { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.5); }
+}
+
+/* ==========================================================================
+   9. Нижняя навигация
+   ========================================================================== */
+.bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.nav-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.nav-button.active {
+  opacity: 1;
+}
+
+.nav-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.nav-button.active .nav-icon {
+  background: linear-gradient(135deg, #ff0033 0%, #0066ff 100%);
+  box-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
+}
+
+.nav-icon i {
+  font-size: 20px;
+  color: white;
+}
+
+.nav-button span {
+  font-size: 12px;
+  color: white;
+}
+
+.new-badge-small {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 15px;
+  height: 15px;
+  background: #ff3b30;
+  border-radius: 50%;
+  font-size: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+/* ==========================================================================
+   10. Модальные окна
+   ========================================================================== */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+  animation: modalFadeIn 0.3s forwards;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-content {
+  background: linear-gradient(135deg, rgba(30, 30, 60, 0.9) 0%, rgba(20, 10, 40, 0.9) 100%);
+  border-radius: 15px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+  width: 90%;
+  max-width: 400px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: contentSlideIn 0.3s forwards;
+}
+
+@keyframes contentSlideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  background: linear-gradient(90deg, #ff0033, #ffffff, #0066ff);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.close-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* ==========================================================================
+   11. Магазин
+   ========================================================================== */
+.modal-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-size: 14px;
+}
+
+.tab.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-bottom: 2px solid #0066ff;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.shop-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.shop-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.shop-item-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #ff0033 0%, #0066ff 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+}
+
+.shop-item-icon i {
+  font-size: 18px;
+  color: white;
+}
+
+.shop-item-info {
+  flex: 1;
+}
+
+.shop-item-title {
+  font-weight: bold;
+  margin-bottom: 3px;
+}
+
+.shop-item-desc {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.shop-item-price {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+}
+
+.shop-item-price i {
+  color: #ffcc00;
+  margin-right: 5px;
+}
+
+.premium-item {
+  background: linear-gradient(135deg, rgba(255, 204, 0, 0.1) 0%, rgba(255, 153, 0, 0.1) 100%);
+  border: 1px solid #ffcc00;
+}
+
+.premium-item:hover {
+  background: linear-gradient(135deg, rgba(255, 204, 0, 0.2) 0%, rgba(255, 153, 0, 0.2) 100%);
+}
+
+.premium-item .shop-item-icon {
+  background: linear-gradient(135deg, #ffcc00 0%, #ff9900 100%);
+}
+
+.coming-soon {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.coming-soon:hover {
+  transform: none;
+  box-shadow: none;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ==========================================================================
+   12. Головоломка
+   ========================================================================== */
+.puzzle-info {
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.puzzle-difficulty {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.difficulty-btn {
+  flex: 1;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 20px;
+  color: white;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.difficulty-btn.active {
+  background: linear-gradient(135deg, #ff0033 0%, #0066ff 100%);
+  box-shadow: 0 0 10px rgba(0, 102, 255, 0.5);
+}
+
+.puzzle-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.puzzle-timer i, .puzzle-reward i {
+  margin-right: 5px;
+}
+
+.puzzle-timer i {
+  color: #00ccff;
+}
+
+.puzzle-reward i {
+  color: #ffcc00;
+}
+
+.puzzle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.puzzle-cell {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.puzzle-cell:hover {
+  transform: scale(1.05);
+}
+
+.puzzle-progress-container {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.puzzle-progress-bar {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #ff0033, #0066ff);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.puzzle-tip {
+  font-size: 12px;
+  opacity: 0.7;
+  text-align: center;
+  margin: 0;
+}
+
+/* ==========================================================================
+   13. Задания
+   ========================================================================== */
+.task-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.task-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #ff0033 0%, #0066ff 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+}
+
+.task-icon i {
+  font-size: 18px;
+  color: white;
+}
+
+.task-info {
+  flex: 1;
+}
+
+.task-title {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.task-progress-container {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  margin-bottom: 5px;
+  overflow: hidden;
+}
+
+.task-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #00ccff, #0066ff);
+  border-radius: 2px;
+}
+
+.task-progress-text {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.task-reward {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+}
+
+.task-reward i {
+  color: #ffcc00;
+  margin-right: 5px;
+}
+
+.task-complete-btn {
+  padding: 5px 10px;
+  background: linear-gradient(135deg, #ff0033 0%, #0066ff 100%);
+  border: none;
+  border-radius: 15px;
+  color: white;
+  font-size: 12px;
+  margin-top: 10px;
+  cursor: pointer;
+  align-self: flex-end;
+}
+
+/* ==========================================================================
+   14. Друзья
+   ========================================================================== */
+.friends-search {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.friends-search input {
+  width: 100%;
+  padding: 10px 15px 10px 35px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 20px;
+  color: white;
+  outline: none;
+}
+
+.friends-search i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.friend-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.friend-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  overflow: hidden;
+}
+
+.friend-avatar.blue {
+  background: linear-gradient(135deg, #0066ff 0%, #00ccff 100%);
+}
+
+.friend-avatar.red {
+  background: linear-gradient(135deg, #ff0033 0%, #ff3b30 100%);
+}
+
+.friend-info {
+  flex: 1;
+}
+
+.friend-name {
+  font-weight: bold;
+  margin-bottom: 3px;
+}
+
+.friend-level {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.friend-score {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+}
+
+.friend-gift {
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(135deg, #ff0033 0%, #0066ff 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.friend-gift i {
+  font-size: 14px;
+  color: white;
+}
+
+.invite-friend-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  background: linear-gradient(135deg, #ff0033 0%, #0066ff 100%);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  width: 100%;
+  margin-top: 15px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.invite-friend-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   15. Lucky Drive
+   ========================================================================== */
+.lucky-drive-container {
+  text-align: center;
+}
+
+.lucky-drive-container p {
+  margin-bottom: 20px;
+}
+
+.wheel-container {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  margin: 0 auto 30px;
+}
+
+.wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(
+    #ff0033 0deg 45deg,
+    #ffcc00 45deg 90deg,
+    #0066ff 90deg 135deg,
+    #00ccff 135deg 180deg,
+    #ff3b30 180deg 225deg,
+    #ffcc00 225deg 270deg,
+    #0066ff 270deg 315deg,
+    #00ccff 315deg 360deg
+  );
+  position: relative;
+  overflow: hidden;
+  transform: rotate(0deg);
+  transition: transform 3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.wheel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: repeating-conic-gradient(
+    rgba(0, 0, 0, 0) 0deg 15deg,
+    rgba(0, 0, 0, 0.03) 15deg 30deg
+  );
+  border-radius: 50%;
+}
+
+.wheel::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30%;
+  height: 30%;
+  background: radial-gradient(circle, #1a1a2e 0%, #0d0d1a 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.spin-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  padding: 10px 15px;
+  background: linear-gradient(135deg, #ff0033 0%, #0066ff 100%);
+  border: none;
+  border-radius: 20px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.prize-history {
+  text-align: left;
+}
+
+.prize-history h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+#prize-history-list {
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.prize-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 5px;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.prize-item i {
+  margin-right: 10px;
+}
+
+.prize-item.coins i {
+  color: #ffcc00;
+}
+
+.prize-item.energy i {
+  color: #00ccff;
+}
+
+.prize-item.booster i {
+  color: #ff3b30;
+}
+
+/* ==========================================================================
+   16. Уведомления
+   ========================================================================== */
+#notification-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.notification {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  animation: notificationFadeIn 0.3s forwards, notificationFadeOut 0.3s 2.7s forwards;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  border-left: 3px solid #0066ff;
+}
+
+.notification i {
+  margin-right: 10px;
+}
+
+@keyframes notificationFadeIn {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes notificationFadeOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(50px); }
+}
+
+/* ==========================================================================
+   17. Адаптивность
+   ========================================================================== */
+@media (max-width: 768px) {
+  .top-bar {
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-  }
-  
-  /* ==========================================================================
-     2. Заголовки и техно-текст
-     ========================================================================== */
-  h1 {
-    color: #ffcc00;
-    margin-top: 20px;
-    font-size: 3rem;
-    text-shadow: 
-      0 0 10px rgba(255, 0, 0, 0.8),
-      0 0 20px rgba(0, 0, 255, 0.8),
-      0 0 30px rgba(255, 255, 255, 0.8);
-    animation: neonFlicker 1.5s linear infinite;
-  }
-  
-  @keyframes neonFlicker {
-    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-      text-shadow: 0 0 10px rgba(255, 0, 0, 0.8),
-                   0 0 20px rgba(0, 0, 255, 0.8),
-                   0 0 30px rgba(255, 255, 255, 0.8);
-    }
-    20%, 24%, 55% {
-      text-shadow: none;
-    }
-  }
-  
-  p {
-    margin: 0.5rem 0;
-  }
-  
-  /* ==========================================================================
-     3. Основной игровой контейнер
-     ========================================================================== */
-  #game-container {
-    margin: 0 auto;
-    padding: 20px;
-    max-width: 600px;
-    background: linear-gradient(145deg, #330000, #001a33);
-    border-radius: 15px;
-    box-shadow: 0 0 20px rgba(0, 0, 255, 0.5);
-  }
-  
-  /* ==========================================================================
-     4. Контейнер с Кракена и динамика
-     ========================================================================== */
-  #kraken-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 20px auto;
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1));
-    animation: bgShift 6s ease-in-out infinite;
-  }
-  
-  @keyframes bgShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  
-  #kraken {
-    max-width: 300px;
-    width: 100%;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    border-radius: 20px;
-    border: 2px solid #fff;
-    box-shadow: 0 0 20px rgba(255, 0, 100, 0.4);
-  }
-  
-  #kraken:active {
-    transform: scale(1.1);
-    box-shadow: 0 0 20px #ff0000, 0 0 30px #0000ff;
-  }
-  
-  /* Эффект вспышки за Кракеном */
-  #kraken-container::after {
-    content: '';
-    position: absolute;
-    top: -10%;
-    left: -10%;
-    width: 120%;
-    height: 120%;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 0, 0, 0.7) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s, transform 0.3s;
-    transform: scale(0.8);
-    z-index: -1;
-  }
-  
-  #kraken-container:active::after {
-    opacity: 1;
-    transform: scale(1.5);
-  }
-  
-  /* ==========================================================================
-     5. Меню и кнопки с неоновыми эффектами
-     ========================================================================== */
-  #menu-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 20px;
-  }
-  
-  #menu-buttons button {
-    font-size: 18px;
-    padding: 10px 20px;
-    background: linear-gradient(145deg, #003366, #330000);
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.3s, background 0.3s;
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-    position: relative;
-    overflow: hidden;
-  }
-  
-  #menu-buttons button:before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: rgba(255,255,255,0.2);
-    transform: skewX(-45deg);
-    transition: left 0.5s;
-  }
-  
-  #menu-buttons button:hover:before {
-    left: 100%;
-  }
-  
-  #menu-buttons button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 15px #fff;
-  }
-  
-  #menu-buttons button:active {
-    background-color: #003f7f;
-  }
-  
-  /* ==========================================================================
-     6. Модальные окна: Магазин и Головоломка с эффектами входа
-     ========================================================================== */
-  #shop-modal, #puzzle-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.92);
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-    animation: modalFadeIn 0.5s forwards;
-  }
-  
-  @keyframes modalFadeIn {
-    from { opacity: 0; transform: scale(0.8); }
-    to { opacity: 1; transform: scale(1); }
-  }
-  
-  #shop-content, #puzzle-content {
-    background: #001133;
-    padding: 20px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-    color: #fff;
-    box-shadow: 0 0 20px #ff0000;
-  }
-  
-  #shop-content h2, #puzzle-content h2 {
-    margin-bottom: 20px;
-    color: #ff0000;
-  }
-  
-  .shop-item {
-    margin: 10px;
-    padding: 10px;
-    background: linear-gradient(45deg, #0000ff, #ff0000);
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  
-  .shop-item:hover {
-    background: linear-gradient(45deg, #ff0000, #0000ff);
-  }
-  
-  #close-shop, #close-puzzle {
-    margin-top: 15px;
-    padding: 8px 16px;
-    background: #fff;
-    color: #000;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  
-  #close-shop:hover, #close-puzzle:hover {
-    background: #ddd;
-  }
-  
-  /* ==========================================================================
-     7. Головоломка: Сетка и таймер
-     ========================================================================== */
-  #puzzle-container {
-    position: relative;
-    width: 80%;
-    height: 500px;
-    margin: 50px auto;
-    background: #222;
-    border-radius: 20px;
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    grid-template-rows: repeat(6, 1fr);
     gap: 10px;
-    box-shadow: 0 0 15px rgba(0, 0, 255, 0.7);
-    overflow: hidden;
-    transition: background 0.3s ease;
   }
   
-  .puzzle-cell {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 0.9rem;
-    color: #fff;
-    border: 1px solid #fff;
-    transition: transform 0.3s;
+  .stats-container {
+    width: 100%;
+    justify-content: space-between;
   }
   
-  .puzzle-cell:hover {
-    transform: scale(1.1);
+  #kraken-container {
+    width: 200px;
+    height: 200px;
   }
   
-  /* ==========================================================================
-     8. Дополнительные стили для машинок (если используются)
-     ========================================================================== */
-  .car {
-    position: relative;
-    width: 60px;
-    height: 100px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 5px;
-    font-size: 14px;
-    font-weight: bold;
-    color: #fff;
-    background: #4CAF50;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    transform: scale(1);
-    opacity: 0.9;
-  }
-  
-  .car:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(0,255,0,1);
-  }
-  
-  .car.red { background-color: #FF4D4D; }
-  .car.blue { background-color: #007BFF; }
-  .car.green { background-color: #00FF00; }
-  .car.yellow { background-color: #FFEB3B; }
-  .car.purple { background-color: #9C27B0; }
-  
-  @keyframes car-glow {
-    0% { box-shadow: 0 0 20px rgba(255,255,255,0.5); transform: rotate(0deg); }
-    50% { box-shadow: 0 0 40px rgba(255,255,0,1); transform: rotate(10deg); }
-    100% { box-shadow: 0 0 20px rgba(255,255,255,0.5); transform: rotate(0deg); }
-  }
-  
-  .car.animate { animation: car-glow 1.5s infinite; }
-  .car.dragging {
-    opacity: 0.7;
-    box-shadow: 0 0 30px rgba(0,0,0,1);
-    transform: scale(1.1);
-  }
-  
-  /* ==========================================================================
-     9. Эффект всплеска (Splash) – усиленный
-     ========================================================================== */
-  .splash-effect {
-    position: absolute;
+  .menu-button {
     width: 50px;
     height: 50px;
-    background: rgba(255,255,0,0.5);
-    border-radius: 50%;
-    animation: splash 1s ease-out;
-    pointer-events: none;
   }
   
-  @keyframes splash {
-    0% { transform: scale(0); opacity: 1; }
-    100% { transform: scale(3); opacity: 0; }
-  }
-  
-  /* ==========================================================================
-     10. Эффект частиц при клике (новый)
-     ========================================================================== */
-  .particle {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    background: radial-gradient(circle, #ff0000, #ffffff);
-    border-radius: 50%;
-    opacity: 0.8;
-    animation: particleFade 0.8s forwards;
-    pointer-events: none;
-  }
-  
-  @keyframes particleFade {
-    0% { opacity: 0.8; transform: scale(1); }
-    100% { opacity: 0; transform: scale(0.5); }
-  }
-  
-  /* ==========================================================================
-     11. Уведомления
-     ========================================================================== */
-  .notification {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #333;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    animation: fadeInOut 3s ease-in-out;
-  }
-  
-  @keyframes fadeInOut {
-    0% { opacity: 0; transform: translateY(20px); }
-    10%, 90% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(20px); }
-  }
-  
-  /* ==========================================================================
-     12. Loading Screen
-     ========================================================================== */
-  #loading-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0,0,0,0.95);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  
-  #loading-image {
-    width: auto;
-    height: 90vh;
-    max-height: 90vh;
-    border-radius: 20px;
-    box-shadow: 0 0 40px rgba(0,255,255,0.4);
-    object-fit: contain;
-  }
-  
-  #loading-screen.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
-  
-  /* ==========================================================================
-     13. Общие стили для кнопок (переопределенные)
-     ========================================================================== */
-  button {
+  .menu-button i {
     font-size: 18px;
-    padding: 10px 20px;
-    margin: 10px;
-    background: #2196F3;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    box-shadow: 0 0 15px rgba(0,0,255,0.5);
-    transition: transform 0.3s, background 0.3s;
   }
   
-  button:hover {
-    background: #0b7dda;
-    transform: scale(1.05);
+  .menu-button span {
+    font-size: 8px;
   }
   
-  #timer {
-    font-size: 24px;
-    color: #f44336;
+  .side-menu {
+    gap: 15px;
   }
   
-  /* ==========================================================================
-     14. Дополнительные стили для перемещения узлов головоломки
-     ========================================================================== */
-  #puzzle-container {
-    cursor: grab;
+  .nav-icon {
+    width: 40px;
+    height: 40px;
   }
   
-  #puzzle-container:active {
-    cursor: grabbing;
+  .nav-icon i {
+    font-size: 18px;
   }
   
-  .car.moveable {
-    cursor: pointer;
-    transition: transform 0.3s ease;
+  .nav-button span {
+    font-size: 10px;
   }
   
-  /* ==========================================================================
-     Конец файла style.css
-     ========================================================================== */
+  .wheel-container {
+    width: 200px;
+    height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  #kraken-container {
+    width: 150px;
+    height: 150px;
+  }
   
+  .menu-button {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .side-menu {
+    gap: 10px;
+  }
+}
+
+/* ==========================================================================
+   18. Анимации и эффекты
+   ========================================================================== */
+@keyframes glow {
+  0% { filter: drop-shadow(0 0 5px rgba(0, 102, 255, 0.5)); }
+  100% { filter: drop-shadow(0 0 15px rgba(0, 102, 255, 0.8)); }
+}
+
+.glow-effect {
+  animation: glow 2s infinite alternate;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
