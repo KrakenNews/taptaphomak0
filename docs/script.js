@@ -120,9 +120,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     setTimeout(() => {
       // Скрываем экран загрузки
-      document.getElementById('loading-screen').style.opacity = '0';
+      document.getElementById('docs/loading-screen').style.opacity = '0';
       setTimeout(() => {
-        document.getElementById('loading-screen').style.display = 'none';
+        document.getElementById('docs/loading-screen').style.display = 'none';
         document.getElementById('main-content').style.display = 'flex';
         setTimeout(() => {
           document.getElementById('main-content').classList.add('active');
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!isMobile) {
       // Если не мобильное устройство, показываем экран проверки устройства
       document.getElementById('device-check').style.display = 'flex';
-      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('docs/loading-screen').style.display = 'none';
     }
   }
   
