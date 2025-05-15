@@ -14,7 +14,7 @@ nest_asyncio.apply()
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         keyboard = [
-            [InlineKeyboardButton("Перейти к игре", url="https://czolowek.github.io/TapKraken1/")]
+            [InlineKeyboardButton("Перейти к игре", url="https://czolowek.github.io/taptaphomak0/")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 

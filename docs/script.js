@@ -773,6 +773,102 @@ function sendGift(friendId) {
   showNotification("Подарок отправлен!", "gift");
 }
 
+// Открыть лидерборд
+function openLeaderboard() {
+  document.getElementById('leaderboard-modal').style.display = 'flex';
+  renderLeaderboard('global');
+  
+  // Добавляем обработчики событий для вкладок
+  const tabs = document.querySelectorAll('.leaderboard-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      // Удаляем активный класс у всех вкладок
+      tabs.forEach(t => t.classList.remove('active'));
+      // Добавляем активный класс кликнутой вкладке
+      this.classList.add('active');
+      // Рендерим соответствующий лидерборд
+      renderLeaderboard(this.dataset.tab);
+    });
+  });
+}
+
+// Закрыть лидерборд
+function closeLeaderboard() {
+  document.getElementById('leaderboard-modal').style.display = 'none';
+}
+
+// Рендер лидерборда
+function renderLeaderboard(type) {
+  const container = document.getElementById('leaderboard-container');
+  container.innerHTML = '';
+  
+  // Получаем данные в зависимости от типа лидерборда
+  let leaderboardData = [];
+  
+  if (type === 'global') {
+    // Данные глобального лидерборда
+    leaderboardData = [
+      { id: 1, username: 'CyberKraken', level: 42, score: 98765, isYou: false },
+      { id: 2, username: 'RedOcean', level: 38, score: 87654, isYou: false },
+      { id: 3, username: 'TentacleKing', level: 35, score: 76543, isYou: false },
+      { id: 4, username: 'Player1', level: 30, score: 65432, isYou: true },
+      { id: 5, username: 'DeepSea', level: 28, score: 54321, isYou: false },
+      { id: 6, username: 'WaveMaster', level: 25, score: 43210, isYou: false },
+      { id: 7, username: 'OceanRider', level: 22, score: 32109, isYou: false },
+      { id: 8, username: 'AquaGamer', level: 20, score: 21098, isYou: false },
+      { id: 9, username: 'DeepDiver', level: 18, score: 10987, isYou: false },
+      { id: 10, username: 'SeaWanderer', level: 15, score: 9876, isYou: false }
+    ];
+  } else {
+    // Данные лидерборда друзей
+    leaderboardData = [
+      { id: 4, username: 'Player1', level: 30, score: 65432, isYou: true },
+      { id: 11, username: 'FriendA', level: 25, score: 45678, isYou: false },
+      { id: 12, username: 'FriendB', level: 22, score: 34567, isYou: false },
+      { id: 13, username: 'FriendC', level: 20, score: 23456, isYou: false },
+      { id: 14, username: 'FriendD', level: 18, score: 12345, isYou: false }
+    ];
+  }
+  
+  // Рендерим лидерборд
+  leaderboardData.forEach((player, index) => {
+    const item = document.createElement('div');
+    item.className = `leaderboard-item ${player.isYou ? 'leaderboard-you' : ''}`;
+    
+    const rankClass = index < 3 ? `rank-${index+1}` : '';
+    
+    item.innerHTML = `
+      <div class="leaderboard-rank ${rankClass}">${index+1}</div>
+      <div class="leaderboard-player">
+        <div class="player-name">${player.username}</div>
+        <div class="player-level">Уровень ${player.level}</div>
+      </div>
+      <div class="leaderboard-score">${formatNumber(player.score)}</div>
+    `;
+    
+    container.appendChild(item);
+  });
+}
+
+// Телеграм команды
+function openTelegramCommands() {
+  document.getElementById('telegram-commands-modal').style.display = 'flex';
+}
+
+function closeTelegramCommands() {
+  document.getElementById('telegram-commands-modal').style.display = 'none';
+}
+
+// Функция для поделиться в тг бота
+function shareToBots() {
+  showNotification('Ссылка скопирована в буфер обмена!', 'link');
+  
+  // В реальном приложении мы бы использовали navigator.clipboard для копирования ссылки
+  setTimeout(() => {
+    showNotification('Отправьте ссылку друзьям в Telegram!', 'telegram');
+  }, 1500);
+}
+
 // =========================================================================
 // Функции Lucky Drive
 // =========================================================================
