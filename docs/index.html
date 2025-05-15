@@ -20,18 +20,28 @@
   <!-- Проверка устройства -->
   <div id="device-check">
     <div class="device-check-content">
-      <h2>Доступ только с мобильного устройства</h2>
-      <p>Сканируйте QR-код для игры на мобильном телефоне</p>
+      <h2>TapKraken Mobile</h2>
+      <p>Игра TapKraken доступна только на мобильных устройствах</p>
       <div class="qr-container">
-        <img src="TAPKRAKEN.png" alt="QR Code" class="qr-code">
+        <img src="docs/TAPKRAKEN.png" alt="QR Code" class="qr-code">
       </div>
-      <p class="small-text">TapKraken создан для мобильных устройств</p>
+      <div class="device-info">
+        <div class="device-icon desktop">
+          <i class="fas fa-desktop"></i>
+          <span>Компьютер</span>
+        </div>
+        <div class="device-icon mobile">
+          <i class="fas fa-mobile-alt"></i>
+          <span>Телефон</span>
+        </div>
+      </div>
+      <p class="small-text">Сканируйте QR-код для игры на смартфоне</p>
     </div>
   </div>
 
   <!-- Загрузочный экран с анимацией -->
   <div id="loading-screen">
-    <img src="images/loading-screen.webp" alt="Загрузка..." id="loading-image">
+    <img src="loading-screen.webp" alt="Загрузка..." id="loading-image">
     <div class="loading-progress-container">
       <div id="loading-progress-bar"></div>
     </div>
@@ -104,7 +114,7 @@
       <!-- Центральная зона с Кракеном -->
       <div id="kraken-container">
         <!-- При клике вызывается tap(event) -->
-        <img id="kraken" src="images/kraken_1.png" alt="Kraken" draggable="false" onclick="tap(event)">
+        <img id="kraken" src="kraken_1.png" alt="Kraken" draggable="false" onclick="tap(event)">
         <!-- Контейнер для визуальных эффектов -->
         <div id="tap-effects"></div>
       </div>

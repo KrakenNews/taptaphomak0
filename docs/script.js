@@ -90,6 +90,9 @@ let prizeHistory = [];
 // Инициализация игры
 // =========================================================================
 document.addEventListener('DOMContentLoaded', function() {
+  // Проверяем устройство
+  checkDeviceType();
+  
   // Загружаем данные игры
   loadGameData();
   
@@ -133,6 +136,18 @@ document.addEventListener('DOMContentLoaded', function() {
       startGameIntervals();
     }, delay);
   }, 1000);
+  
+  // Функция проверки типа устройства
+  function checkDeviceType() {
+    // Проверяем, является ли устройство мобильным
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (!isMobile) {
+      // Если не мобильное устройство, показываем экран проверки устройства
+      document.getElementById('device-check').style.display = 'flex';
+      document.getElementById('loading-screen').style.display = 'none';
+    }
+  }
   
   // Обработчики для навигации
   document.querySelectorAll('.nav-button').forEach(button => {
