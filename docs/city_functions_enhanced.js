@@ -140,6 +140,12 @@ const BUILDINGS_CONFIG = {
   }
 };
 
+// Создаем объект для доступа к функциям города из других скриптов
+window.city = {
+  openCityTab: openCityTab,
+  renderCity: renderCity
+};
+
 // Состояние города игрока
 let cityState = {
   // Уровень города
