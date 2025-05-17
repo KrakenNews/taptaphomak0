@@ -15,220 +15,180 @@
   <meta property="og:title" content="TapKraken" />
   <meta property="og:description" content="Кликай на Кракена, собирай монеты и стань лучшим в мире TapKraken!" />
   <meta property="og:type" content="website" />
-  <!-- Добавляем стили для города -->
+  <!-- Дополнительные стили для улучшения интерфейса -->
   <style>
-    /* Стили для города */
-    #fixed-city-tab {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 10000;
-      background: linear-gradient(135deg, #0a1535 0%, #1a0a20 100%);
-      overflow: auto;
-      display: none;
+    /* Улучшенные кнопки меню */
+    .menu-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 15px;
+      padding: 12px 0;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
-    .city-header {
-      background-color: rgba(0, 0, 0, 0.5);
-      padding: 10px;
+    .menu-button::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, #ff3b30, #0a84ff, #34c759);
+      background-size: 300% 300%;
+      animation: button-gradient 4s linear infinite;
+      z-index: -1;
+      opacity: 0.7;
+      border-radius: 15px;
+      filter: blur(8px);
+      transition: all 0.3s ease;
+    }
+    
+    @keyframes button-gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .menu-button i {
+      font-size: 22px;
+      margin-bottom: 8px;
+      color: white;
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
+    }
+    
+    .menu-button span {
+      font-size: 11px;
+      font-weight: bold;
+      color: white;
+      opacity: 0.9;
+      transition: all 0.3s ease;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+    }
+    
+    .menu-button:active {
+      transform: scale(0.9);
+    }
+    
+    .menu-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
+    }
+    
+    .menu-button:hover::before {
+      opacity: 0.9;
+      filter: blur(6px);
+    }
+    
+    .menu-button:hover i {
+      transform: scale(1.1);
+    }
+    
+    /* Стили для улучшенного кракена */
+    #kraken-wrapper {
+      position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
+    }
+    
+    #kraken {
       position: relative;
+      z-index: 2;
+      filter: drop-shadow(0 0 15px rgba(255, 59, 48, 0.7));
+      transition: all 0.2s ease;
+      transform-origin: center;
+      mix-blend-mode: screen;
+      filter: brightness(1.2) contrast(1.2) saturate(1.2);
+    }
+    
+    .kraken-glow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+      background: radial-gradient(circle, rgba(255,59,48,0.3) 0%, rgba(10,132,255,0.2) 50%, rgba(52,199,89,0) 70%);
+      border-radius: 50%;
+      opacity: 0.7;
+      filter: blur(20px);
+      animation: kraken-pulse 3s ease-in-out infinite;
+    }
+    
+    @keyframes kraken-pulse {
+      0%, 100% { 
+        transform: scale(0.9);
+        opacity: 0.7;
+      }
+      50% { 
+        transform: scale(1.1);
+        opacity: 0.9;
+      }
+    }
+    
+    /* Улучшенные эффекты нажатия */
+    #tap-effects {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      overflow: visible;
+    }
+    
+    .tap-effect {
+      position: absolute;
+      pointer-events: none;
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: radial-gradient(circle, rgba(255,59,48,0.8) 0%, rgba(10,132,255,0.4) 60%, rgba(52,199,89,0) 100%);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+      animation: tap-wave 0.6s ease-out forwards;
+      z-index: 100;
+    }
+    
+    @keyframes tap-wave {
+      0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0.8;
+      }
+      70% {
+        transform: translate(-50%, -50%) scale(1.8);
+        opacity: 0.2;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+      }
+    }
+    
+    /* Стилизация индикатора NEW */
+    .new-badge {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background: linear-gradient(45deg, #ff3b30, #ff9500);
       color: white;
-      font-family: 'Orbitron', sans-serif;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .city-content {
-      padding: 15px;
-      overflow-y: auto;
-      max-height: calc(100vh - 60px);
-    }
-    
-    /* RGB эффекты */
-    @keyframes gradientText {
-      0% { background-position: 0% center; }
-      100% { background-position: 200% center; }
-    }
-    
-    .rgb-text {
-      color: transparent;
-      background: linear-gradient(90deg, #ff3b30, #0a84ff, #34c759);
-      background-size: 200% auto;
-      background-clip: text;
-      -webkit-background-clip: text;
-      animation: gradientText 4s linear infinite;
-    }
-    
-    .rgb-button {
-      background: linear-gradient(90deg, #ff3b30, #0a84ff);
-      background-size: 200% auto;
-      animation: gradientText 4s linear infinite;
-    }
-    
-    /* Анимации для зданий */
-    @keyframes upgradeAnimation {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-    
-    @keyframes floatingText {
-      0% { transform: translateY(0) scale(1); opacity: 1; }
-      100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
-    }
-    
-    @keyframes levelUpShake {
-      0% { transform: translateX(0); }
-      10% { transform: translateX(-5px); }
-      20% { transform: translateX(5px); }
-      30% { transform: translateX(-3px); }
-      40% { transform: translateX(3px); }
-      50% { transform: translateX(-1px); }
-      60% { transform: translateX(1px); }
-      100% { transform: translateX(0); }
-    }
-    
-    @keyframes flash {
-      0% { opacity: 0; }
-      50% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-    
-    .building-card {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 10px;
-      overflow: hidden;
-      transition: transform 0.3s ease;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    }
-    
-    .building-card:hover {
-      transform: translateY(-5px);
-    }
-    
-    .notification.visible {
-      transform: translateX(0);
-    }
-    
-    .upgrade-particle {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      pointer-events: none;
-      opacity: 0.8;
-      animation: floatingParticle 1.5s ease-out forwards;
-    }
-    
-    @keyframes floatingParticle {
-      0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
-      100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
-    }
-    
-    .level-up-particle {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      pointer-events: none;
-      opacity: 0.8;
-      animation: levelUpParticle 2s ease-out forwards;
-    }
-    
-    @keyframes levelUpParticle {
-      0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
-      100% { transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(0); opacity: 0; }
-    }
-    
-    .floating-text {
-      position: fixed;
+      font-size: 9px;
       font-weight: bold;
-      pointer-events: none;
-      z-index: 1002;
-      text-shadow: 0 0 10px currentColor;
-      animation: floatingText 1.5s ease-out forwards;
+      padding: 3px 6px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(255, 59, 48, 0.5);
+      animation: pulse-badge 1.5s infinite;
     }
     
-    /* Стили для городского фона */
-    .city-background {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      overflow: hidden;
-    }
-    
-    .city-background-grid {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: linear-gradient(rgba(10, 132, 255, 0.1) 1px, transparent 1px), 
-                        linear-gradient(90deg, rgba(10, 132, 255, 0.1) 1px, transparent 1px);
-      background-size: 20px 20px;
-      transform: perspective(500px) rotateX(60deg);
-      transform-origin: center top;
-    }
-    
-    .city-background-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(to bottom, transparent 0%, rgba(10, 21, 53, 0.8) 100%);
-    }
-    
-    /* Информация о городе */
-    .city-info {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 10px;
-      padding: 15px;
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-    
-    /* Сетка зданий */
-    .buildings-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-    }
-    
-    /* Уведомления */
-    .notification {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 10px 20px;
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-      border-radius: 5px;
-      z-index: 1001;
-      transform: translateX(150%);
-      transition: transform 0.3s ease;
-    }
-    
-    /* Адаптивность для маленьких экранов */
-    @media (max-width: 600px) {
-      .city-info {
-        flex-direction: column;
-      }
-      
-      .buildings-grid {
-        grid-template-columns: 1fr;
-      }
+    @keyframes pulse-badge {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
     }
   </style>
 </head>
@@ -306,11 +266,6 @@
     <div class="game-area">
       <!-- Левое меню -->
       <div class="side-menu left-menu">
-        <div class="menu-button friends-button" onclick="openFriends()">
-          <div class="indicator">5</div>
-          <i class="fas fa-users"></i>
-          <span>Друзья</span>
-        </div>
         <div class="menu-button tasks-button" onclick="openTasks()">
           <div class="indicator">3</div>
           <i class="fas fa-gift"></i>
@@ -320,17 +275,20 @@
           <i class="fas fa-trophy"></i>
           <span>Рейтинг</span>
         </div>
-        <div class="menu-button city-button">
-          <div class="new-badge">NEW</div>
-          <i class="fas fa-city"></i>
-          <span>Город</span>
+        <div class="menu-button friends-button" onclick="openFriends()">
+          <div class="indicator">5</div>
+          <i class="fas fa-users"></i>
+          <span>Друзья</span>
         </div>
       </div>
 
       <!-- Центральная зона с Кракеном -->
       <div id="kraken-container">
         <!-- При клике вызывается tap(event) -->
-        <img id="kraken" src="kraken_1.png" alt="Kraken" draggable="false" onclick="tap(event)">
+        <div id="kraken-wrapper">
+          <img id="kraken" src="kraken_1.png" alt="Kraken" draggable="false" onclick="tap(event)">
+          <div class="kraken-glow"></div>
+        </div>
         <!-- Контейнер для визуальных эффектов -->
         <div id="tap-effects"></div>
       </div>
@@ -349,28 +307,15 @@
           <i class="fab fa-telegram"></i>
           <span>Команды</span>
         </div>
+        <div class="menu-button city-button" onclick="openCityTab()">
+          <div class="new-badge">NEW</div>
+          <i class="fas fa-city"></i>
+          <span>Город</span>
+        </div>
       </div>
     </div>
 
-    <!-- Нижняя навигация -->
-    <div class="bottom-nav">
-      <div class="nav-button active" data-tab="main">
-        <i class="fas fa-home"></i>
-        <span>Главная</span>
-      </div>
-      <div class="nav-button" data-tab="city">
-        <i class="fas fa-city"></i>
-        <span>Город</span>
-      </div>
-      <div class="nav-button" data-tab="shop" onclick="openShop()">
-        <i class="fas fa-store"></i>
-        <span>Магазин</span>
-      </div>
-      <div class="nav-button" data-tab="social" onclick="openFriends()">
-        <i class="fas fa-users"></i>
-        <span>Друзья</span>
-      </div>
-    </div>
+    <!-- Нижняя навигационная панель удалена по запросу пользователя -->
     
     <!-- Модальные окна -->
     
@@ -706,10 +651,80 @@
   <!-- Скрипты -->
   <script src="script.js"></script>
   <script src="puzzle.js"></script>
-  <!-- Важно! Добавьте этот скрипт последним, чтобы он мог переопределить обработчики событий -->
-  <script src="fix_city.js"></script>
+  <script src="fix_city_final.js"></script>
   
   <script>
+    // Улучшения интерфейса и анимаций
+    document.addEventListener('DOMContentLoaded', function() {
+      // Улучшаем эффект нажатия
+      const originalCreateParticles = window.createParticles;
+      window.createParticles = function(event) {
+        // Оригинальная функция 
+        if (originalCreateParticles) {
+          originalCreateParticles(event);
+        }
+        
+        const krakenContainer = document.getElementById('kraken-container');
+        const tapEffects = document.getElementById('tap-effects');
+        
+        if (!krakenContainer || !tapEffects) return;
+        
+        // Координаты клика
+        const rect = krakenContainer.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        
+        // Создаем главный круговой эффект
+        const tapEffect = document.createElement('div');
+        tapEffect.className = 'tap-effect';
+        tapEffects.appendChild(tapEffect);
+        tapEffect.style.left = x + 'px';
+        tapEffect.style.top = y + 'px';
+        
+        // Дополнительное свечение
+        const glowEffect = document.createElement('div');
+        glowEffect.style.position = 'absolute';
+        glowEffect.style.width = '100px';
+        glowEffect.style.height = '100px';
+        glowEffect.style.left = x + 'px';
+        glowEffect.style.top = y + 'px';
+        glowEffect.style.borderRadius = '50%';
+        glowEffect.style.background = 'radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(10,132,255,0.2) 50%, transparent 70%)';
+        glowEffect.style.transform = 'translate(-50%, -50%)';
+        glowEffect.style.pointerEvents = 'none';
+        glowEffect.style.zIndex = '45';
+        glowEffect.style.opacity = '1';
+        glowEffect.style.transition = 'all 0.8s ease-out';
+        
+        tapEffects.appendChild(glowEffect);
+        
+        // Анимируем свечение
+        setTimeout(() => {
+          glowEffect.style.transform = 'translate(-50%, -50%) scale(2)';
+          glowEffect.style.opacity = '0';
+        }, 10);
+        
+        // Удаляем эффекты после анимации
+        setTimeout(() => {
+          if (glowEffect.parentNode === tapEffects) {
+            tapEffects.removeChild(glowEffect);
+          }
+          if (tapEffect.parentNode === tapEffects) {
+            tapEffects.removeChild(tapEffect);
+          }
+        }, 800);
+      };
+      
+      // Добавляем обработчик для кнопки City, чтобы она открывала город
+      const cityButton = document.querySelector('.city-button');
+      if (cityButton) {
+        cityButton.onclick = function() {
+          if (typeof openCityTab === 'function') {
+            openCityTab();
+          }
+        };
+      }
+    });
     // Проверка, мобильное ли устройство
     document.addEventListener('DOMContentLoaded', function() {
       // Проверка типа устройства
@@ -736,9 +751,10 @@
               document.getElementById('loading-screen').style.display = 'none';
               document.getElementById('main-content').style.display = 'flex';
               
-              // Загрузка данных города
-              if (typeof renderFixedCity === 'function') {
-                renderFixedCity();
+              // Загрузка данных города, если функция доступна
+              if (typeof window.fixedCityModule !== 'undefined') {
+                console.log('Инициализация модуля города после загрузки...');
+                // Загрузка данных выполняется внутри модуля
               }
             }, 500);
           }, remainingTime);
@@ -763,7 +779,7 @@
           this.classList.add('active');
           
           // Показываем контент активной вкладки
-          document.getElementById(`${tabName}-tab`).classList.add('active');
+          document.getElementById(`${tabName}-tab`)?.classList.add('active');
         });
       });
       
@@ -788,6 +804,25 @@
       // Исправление переключения между вкладками
       document.querySelectorAll('.nav-button').forEach(button => {
         button.addEventListener('click', function() {
+          const tabName = this.dataset.tab;
+          
+          if (tabName === 'city') {
+            if (typeof window.fixedCityModule !== 'undefined') {
+              window.fixedCityModule.openCityTab();
+            } else {
+              console.error('Модуль города не найден');
+            }
+          } else if (tabName === 'main') {
+            // Закрываем все модальные окна
+            document.querySelectorAll('.modal, #city-tab, #fixed-city-tab').forEach(modal => {
+              modal.style.display = 'none';
+            });
+            
+            // Показываем основной контент
+            document.querySelector('.game-area').style.display = 'flex';
+          }
+          
+          // Обновляем активную кнопку
           document.querySelectorAll('.nav-button').forEach(b => {
             b.classList.remove('active');
           });
@@ -795,6 +830,22 @@
         });
       });
     });
+    
+    // Функция проверки типа устройства
+    function checkDeviceType() {
+      if (typeof window.checkDeviceType === 'function') {
+        window.checkDeviceType();
+      } else {
+        // Проверяем, является ли устройство мобильным
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        if (!isMobile) {
+          // Если не мобильное устройство, показываем экран проверки устройства
+          document.getElementById('device-check').style.display = 'flex';
+          document.getElementById('loading-screen').style.display = 'none';
+        }
+      }
+    }
   </script>
 </body>
 </html>
