@@ -1,95 +1,427 @@
 // =========================================================================
-// Исправление отображения города в TapKraken с улучшенной визуализацией
+// Исправление отображения города в TapKraken - полная версия с 1100+ строк
 // =========================================================================
 
-// Глобальное состояние города
-const fixedCityState = {
-  level: 1,
-  experience: 0,
-  nextLevelExp: 1000,
-  incomeMultiplier: 1.0,
-  lastCollectTime: Date.now(),
-  unclaimedIncome: 0,
-  buildings: {
-    house: { level: 1, unlocked: true, income: 1, visualStage: 1 },
-    farm: { level: 0, unlocked: false, income: 0, visualStage: 0 },
-    mine: { level: 0, unlocked: false, income: 0, visualStage: 0 },
-    factory: { level: 0, unlocked: false, income: 0, visualStage: 0 },
-    research: { level: 0, unlocked: false, income: 0, visualStage: 0 },
-    bank: { level: 0, unlocked: false, income: 0, visualStage: 0 },
-    power: { level: 0, unlocked: false, income: 0, visualStage: 0 }
-  }
-};
+// Глобальные данные города
+let cityLevel = 1;
+let cityExperience = 0;
+let cityExperienceNeeded = 100;
+let cityUnclaimedIncome = 0;
+let cityIncomeMultiplier = 1;
+let cityLastUpdate = Date.now();
 
-// Конфигурация зданий
-const FIXED_BUILDINGS = {
-  house: {
+// Массив зданий с их параметрами
+const buildings = [
+  {
+    id: 'house',
     name: 'Жилой дом',
+    description: 'Жилище для жителей города Кракена',
+    baseIncome: 10,
+    incomeGrowth: 1.2,
+    baseCost: 100,
+    costGrowth: 1.5,
+    level: 0,
+    maxLevel: 10,
+    unlocked: true,
+    requiredLevel: 1,
     icon: 'home',
-    basePrice: 100,
-    baseIncome: 1,
-    description: 'Жилище для горожан'
+    iconColor: 'linear-gradient(135deg, #0a84ff, #34c759)',
+    statLabel: 'Жители',
+    statBase: 5,
+    statGrowth: 1.5
   },
-  farm: {
+  {
+    id: 'farm',
     name: 'Ферма водорослей',
-    icon: 'leaf',
-    basePrice: 500,
-    baseIncome: 5,
-    description: 'Выращивает питательные водоросли'
-  },
-  mine: {
-    name: 'Глубоководная шахта',
-    icon: 'gem',
-    basePrice: 2500,
+    description: 'Выращивает питательные водоросли для кракена',
     baseIncome: 25,
-    description: 'Добывает ценные минералы'
+    incomeGrowth: 1.3,
+    baseCost: 500,
+    costGrowth: 1.6,
+    level: 0,
+    maxLevel: 8,
+    unlocked: false,
+    requiredLevel: 2,
+    icon: 'leaf',
+    iconColor: 'linear-gradient(135deg, #34c759, #30d158)',
+    statLabel: 'Урожай',
+    statBase: 3,
+    statGrowth: 1.7
   },
-  factory: {
-    name: 'Подводная фабрика',
-    icon: 'industry',
-    basePrice: 10000,
-    baseIncome: 100,
-    description: 'Производит товары'
+  {
+    id: 'mine',
+    name: 'Подводная шахта',
+    description: 'Добывает редкие минералы со дна океана',
+    baseIncome: 60,
+    incomeGrowth: 1.4,
+    baseCost: 2000,
+    costGrowth: 1.65,
+    level: 0,
+    maxLevel: 7,
+    unlocked: false,
+    requiredLevel: 3,
+    icon: 'gem',
+    iconColor: 'linear-gradient(135deg, #ff3b30, #ff9500)',
+    statLabel: 'Добыча',
+    statBase: 2,
+    statGrowth: 1.8
   },
-  research: {
-    name: 'Научный центр',
+  {
+    id: 'lab',
+    name: 'Исследовательский центр',
+    description: 'Изучает древние мистические знания',
+    baseIncome: 150,
+    incomeGrowth: 1.5,
+    baseCost: 8000,
+    costGrowth: 1.7,
+    level: 0,
+    maxLevel: 6,
+    unlocked: false,
+    requiredLevel: 4,
     icon: 'flask',
-    basePrice: 50000,
-    baseIncome: 500,
-    description: 'Изучает морские глубины'
+    iconColor: 'linear-gradient(135deg, #af52de, #5e5ce6)',
+    statLabel: 'Знания',
+    statBase: 1,
+    statGrowth: 2.0
+  },
+  {
+    id: 'tower',
+    name: 'Башня магии',
+    description: 'Усиливает магические способности кракена',
+    baseIncome: 300,
+    incomeGrowth: 1.6,
+    baseCost: 25000,
+    costGrowth: 1.75,
+    level: 0,
+    maxLevel: 5,
+    unlocked: false,
+    requiredLevel: 5,
+    icon: 'hat-wizard',
+    iconColor: 'linear-gradient(135deg, #5e5ce6, #0a84ff)',
+    statLabel: 'Сила',
+    statBase: 5,
+    statGrowth: 2.2
+  },
+  {
+    id: 'temple',
+    name: 'Храм древних',
+    description: 'Место поклонения древним богам океана',
+    baseIncome: 750,
+    incomeGrowth: 1.7,
+    baseCost: 100000,
+    costGrowth: 1.8,
+    level: 0,
+    maxLevel: 5,
+    unlocked: false,
+    requiredLevel: 6,
+    icon: 'place-of-worship',
+    iconColor: 'linear-gradient(135deg, #ffcc00, #ff9500)',
+    statLabel: 'Верующие',
+    statBase: 3,
+    statGrowth: 2.5
+  },
+  {
+    id: 'portal',
+    name: 'Портал в бездну',
+    description: 'Соединяет мир Кракена с другими измерениями',
+    baseIncome: 2000,
+    incomeGrowth: 1.8,
+    baseCost: 500000,
+    costGrowth: 1.85,
+    level: 0,
+    maxLevel: 3,
+    unlocked: false,
+    requiredLevel: 7,
+    icon: 'portal',
+    iconColor: 'linear-gradient(135deg, #ff375f, #ff3b30)',
+    statLabel: 'Энергия',
+    statBase: 1,
+    statGrowth: 3.0
   }
-};
+];
 
-// Стадии визуального развития зданий
-const BUILDING_STAGES = {
-  house: [
-    { level: 1, description: 'Маленькая хижина с соломенной крышей' },
-    { level: 3, description: 'Деревянный домик с трубой' },
-    { level: 5, description: 'Кирпичный дом с садом' },
-    { level: 7, description: 'Большой особняк с балконами' },
-    { level: 10, description: 'Роскошная вилла с бассейном' }
-  ]
-};
-
-// Функция открытия города
+// Функция для открытия города без ошибок
 function openFixedCityTab() {
-  console.log('Открываем вкладку города...');
+  console.log('Открываем городской интерфейс...');
   
-  // Скрываем все вкладки
-  document.querySelectorAll('.content-tab').forEach(tab => {
-    tab.style.display = 'none';
-  });
+  // Найдем оригинальный контейнер
+  const mainContent = document.getElementById('main-content');
+  if (!mainContent) return;
+  
+  // Проверим, есть ли уже вкладка города
+  let cityTab = document.getElementById('fixed-city-tab');
+  
+  if (!cityTab) {
+    // Создаем новую вкладку города если её еще нет
+    cityTab = document.createElement('div');
+    cityTab.id = 'fixed-city-tab';
+    cityTab.className = 'fixed-tab';
+    cityTab.style.position = 'fixed';
+    cityTab.style.top = '0';
+    cityTab.style.left = '0';
+    cityTab.style.width = '100%';
+    cityTab.style.height = '100%';
+    cityTab.style.zIndex = '10000';
+    cityTab.style.backgroundColor = '#0a1535';
+    cityTab.style.backgroundImage = 'linear-gradient(135deg, #0a1535 0%, #1a0a20 100%)';
+    cityTab.style.overflow = 'auto';
+    cityTab.style.display = 'none';
+    
+    // Создаем фон города с сеткой
+    const cityBackground = document.createElement('div');
+    cityBackground.className = 'city-background';
+    cityBackground.style.position = 'fixed';
+    cityBackground.style.top = '0';
+    cityBackground.style.left = '0';
+    cityBackground.style.width = '100%';
+    cityBackground.style.height = '100%';
+    cityBackground.style.zIndex = '-1';
+    
+    // Создаем сетку
+    const cityGrid = document.createElement('div');
+    cityGrid.className = 'city-background-grid';
+    cityGrid.style.position = 'absolute';
+    cityGrid.style.top = '0';
+    cityGrid.style.left = '0';
+    cityGrid.style.width = '100%';
+    cityGrid.style.height = '100%';
+    cityGrid.style.backgroundImage = 'linear-gradient(rgba(10, 132, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(10, 132, 255, 0.1) 1px, transparent 1px)';
+    cityGrid.style.backgroundSize = '20px 20px';
+    cityGrid.style.transform = 'perspective(500px) rotateX(60deg)';
+    cityGrid.style.transformOrigin = 'center top';
+    
+    // Создаем оверлей для градиента поверх сетки
+    const cityOverlay = document.createElement('div');
+    cityOverlay.className = 'city-background-overlay';
+    cityOverlay.style.position = 'absolute';
+    cityOverlay.style.top = '0';
+    cityOverlay.style.left = '0';
+    cityOverlay.style.width = '100%';
+    cityOverlay.style.height = '100%';
+    cityOverlay.style.background = 'linear-gradient(to bottom, transparent 0%, rgba(10, 21, 53, 0.8) 100%)';
+    
+    cityBackground.appendChild(cityGrid);
+    cityBackground.appendChild(cityOverlay);
+    cityTab.appendChild(cityBackground);
+    
+    // Создаем верхнюю панель города
+    const cityHeader = document.createElement('div');
+    cityHeader.className = 'city-header';
+    cityHeader.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    cityHeader.style.padding = '10px';
+    cityHeader.style.display = 'flex';
+    cityHeader.style.justifyContent = 'center';
+    cityHeader.style.alignItems = 'center';
+    cityHeader.style.position = 'relative';
+    cityHeader.style.color = 'white';
+    cityHeader.style.fontFamily = 'Orbitron, sans-serif';
+    cityHeader.style.borderBottom = '1px solid rgba(255, 255, 255, 0.1)';
+    
+    // Кнопка возврата
+    const backButton = document.createElement('button');
+    backButton.className = 'back-button';
+    backButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
+    backButton.style.position = 'absolute';
+    backButton.style.left = '10px';
+    backButton.style.background = 'linear-gradient(90deg, #ff3b30, #0a84ff)';
+    backButton.style.border = 'none';
+    backButton.style.width = '40px';
+    backButton.style.height = '40px';
+    backButton.style.borderRadius = '50%';
+    backButton.style.display = 'flex';
+    backButton.style.justifyContent = 'center';
+    backButton.style.alignItems = 'center';
+    backButton.style.color = 'white';
+    backButton.style.fontSize = '16px';
+    backButton.style.cursor = 'pointer';
+    backButton.style.boxShadow = '0 0 10px rgba(255, 0, 0, 0.3), 0 0 20px rgba(0, 132, 255, 0.3)';
+    backButton.onclick = closeFixedCityTab;
+    
+    // Заголовок города
+    const cityTitle = document.createElement('h2');
+    cityTitle.id = 'city-title';
+    cityTitle.textContent = 'Город Кракена';
+    cityTitle.style.margin = '0';
+    cityTitle.style.padding = '10px 0';
+    cityTitle.style.textAlign = 'center';
+    cityTitle.style.fontSize = '24px';
+    cityTitle.style.fontWeight = 'bold';
+    cityTitle.style.background = 'linear-gradient(90deg, #ff3b30, #0a84ff, #34c759)';
+    cityTitle.style.backgroundSize = '200% auto';
+    cityTitle.style.color = 'transparent';
+    cityTitle.style.backgroundClip = 'text';
+    cityTitle.style.webkitBackgroundClip = 'text';
+    cityTitle.style.animation = 'gradientText 4s linear infinite';
+    
+    cityHeader.appendChild(backButton);
+    cityHeader.appendChild(cityTitle);
+    cityTab.appendChild(cityHeader);
+    
+    // Контейнер для контента города
+    const cityContent = document.createElement('div');
+    cityContent.id = 'fixed-city-content';
+    cityContent.style.padding = '15px';
+    cityContent.style.overflowY = 'auto';
+    cityContent.style.maxHeight = 'calc(100vh - 60px)';
+    
+    // Контейнер для информации о городе
+    const cityInfo = document.createElement('div');
+    cityInfo.id = 'city-info';
+    cityInfo.className = 'city-info';
+    cityInfo.style.background = 'rgba(0, 0, 0, 0.3)';
+    cityInfo.style.borderRadius = '10px';
+    cityInfo.style.padding = '15px';
+    cityInfo.style.marginBottom = '20px';
+    cityInfo.style.display = 'flex';
+    cityInfo.style.justifyContent = 'space-between';
+    cityInfo.style.alignItems = 'center';
+    cityInfo.style.flexWrap = 'wrap';
+    cityInfo.style.gap = '15px';
+    
+    // Добавляем информацию о городе (будет заполнено позже)
+    cityContent.appendChild(cityInfo);
+    
+    // Контейнер для сетки зданий
+    const buildingsGrid = document.createElement('div');
+    buildingsGrid.id = 'buildings-grid';
+    buildingsGrid.className = 'buildings-grid';
+    buildingsGrid.style.display = 'grid';
+    buildingsGrid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
+    buildingsGrid.style.gap = '20px';
+    
+    // Добавляем контейнер зданий
+    cityContent.appendChild(buildingsGrid);
+    
+    cityTab.appendChild(cityContent);
+    
+    // Создаем контейнер для уведомлений
+    const notificationContainer = document.createElement('div');
+    notificationContainer.id = 'city-notification';
+    notificationContainer.className = 'notification';
+    notificationContainer.style.position = 'fixed';
+    notificationContainer.style.top = '20px';
+    notificationContainer.style.right = '20px';
+    notificationContainer.style.padding = '10px 20px';
+    notificationContainer.style.background = 'rgba(0, 0, 0, 0.8)';
+    notificationContainer.style.color = 'white';
+    notificationContainer.style.borderRadius = '5px';
+    notificationContainer.style.zIndex = '1001';
+    notificationContainer.style.transform = 'translateX(150%)';
+    notificationContainer.style.transition = 'transform 0.3s ease';
+    
+    cityTab.appendChild(notificationContainer);
+    
+    // Стили для анимаций
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+      @keyframes gradientText {
+        0% { background-position: 0% center; }
+        100% { background-position: 200% center; }
+      }
+      
+      @keyframes upgradeAnimation {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+      
+      @keyframes floatingText {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
+      }
+      
+      @keyframes levelUpShake {
+        0% { transform: translateX(0); }
+        10% { transform: translateX(-5px); }
+        20% { transform: translateX(5px); }
+        30% { transform: translateX(-3px); }
+        40% { transform: translateX(3px); }
+        50% { transform: translateX(-1px); }
+        60% { transform: translateX(1px); }
+        100% { transform: translateX(0); }
+      }
+      
+      @keyframes flash {
+        0% { opacity: 0; }
+        50% { opacity: 1; }
+        100% { opacity: 0; }
+      }
+      
+      .building-card {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      }
+      
+      .building-card:hover {
+        transform: translateY(-5px);
+      }
+      
+      .fixed-tab {
+        transition: opacity 0.3s ease;
+      }
+      
+      .notification.visible {
+        transform: translateX(0);
+      }
+      
+      .upgrade-particle {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0.8;
+        animation: floatingParticle 1.5s ease-out forwards;
+      }
+      
+      @keyframes floatingParticle {
+        0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+        100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
+      }
+      
+      .level-up-particle {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0.8;
+        animation: levelUpParticle 2s ease-out forwards;
+      }
+      
+      @keyframes levelUpParticle {
+        0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+        100% { transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(0); opacity: 0; }
+      }
+      
+      .floating-text {
+        position: fixed;
+        font-weight: bold;
+        pointer-events: none;
+        z-index: 1002;
+        text-shadow: 0 0 10px currentColor;
+        animation: floatingText 1.5s ease-out forwards;
+      }
+    `;
+    document.head.appendChild(styleElement);
+    
+    // Добавляем вкладку города в документ
+    document.body.appendChild(cityTab);
+  }
   
   // Показываем вкладку города
-  const cityTab = document.getElementById('city-tab');
-  if (cityTab) {
-    cityTab.style.display = 'block';
-  } else {
-    // Если вкладки нет, создаем её
-    createFixedCityTab();
-  }
+  cityTab.style.display = 'block';
   
-  // Обновляем кнопки навигации
+  // Загружаем данные города
+  loadCityData();
+  
+  // Рендерим город
+  renderFixedCity();
+  
+  // Обновляем активную кнопку навигации
   document.querySelectorAll('.nav-button').forEach(button => {
     button.classList.remove('active');
   });
@@ -98,666 +430,910 @@ function openFixedCityTab() {
   if (cityButton) {
     cityButton.classList.add('active');
   }
-  
-  // Скрываем контейнер с кракеном
-  const krakenContainer = document.getElementById('kraken-container');
-  if (krakenContainer) {
-    krakenContainer.style.display = 'none';
+}
+
+// Функция для закрытия города
+function closeFixedCityTab() {
+  const cityTab = document.getElementById('fixed-city-tab');
+  if (cityTab) {
+    cityTab.style.display = 'none';
   }
   
-  // Отрисовываем город
-  renderFixedCity();
+  // Сохраняем данные города
+  saveCityData();
+  
+  // Обновляем активную кнопку навигации
+  document.querySelectorAll('.nav-button').forEach(button => {
+    button.classList.remove('active');
+  });
+  
+  const mainButton = document.querySelector('.nav-button[data-tab="main"]');
+  if (mainButton) {
+    mainButton.classList.add('active');
+  }
 }
 
-// Создание вкладки города
-function createFixedCityTab() {
-  console.log('Создаем вкладку города...');
-  
-  const mainContent = document.getElementById('main-content');
-  if (!mainContent) return;
-  
-  const cityTab = document.createElement('div');
-  cityTab.id = 'city-tab';
-  cityTab.className = 'content-tab';
-  
-  // Содержимое вкладки
-  cityTab.innerHTML = `
-    <div class="city-header">
-      <h2 class="rgb-text">Город Кракена</h2>
-      <p>Стройте и улучшайте здания для получения пассивного дохода</p>
-    </div>
-    <div id="city-content" class="city-content">
-      <!-- Содержимое будет заполнено динамически -->
-    </div>
-  `;
-  
-  mainContent.appendChild(cityTab);
-}
-
-// Отрисовка города
+// Функция для рендеринга города
 function renderFixedCity() {
-  console.log('Отрисовываем город...');
+  // Сначала рассчитаем накопленный доход
+  calculateUnclaimedIncome();
   
-  // Получаем контейнер для контента города
-  const cityContent = document.getElementById('city-content');
-  if (!cityContent) return;
+  // Обновляем заголовок города с уровнем
+  const cityTitle = document.getElementById('city-title');
+  if (cityTitle) {
+    cityTitle.textContent = `Город Кракена (Уровень ${cityLevel})`;
+  }
   
-  // Очищаем контейнер
-  cityContent.innerHTML = '';
+  // Обновляем информацию о городе
+  renderCityInfo();
   
-  // Создаем фон с RGB эффектом
-  const cityBackground = document.createElement('div');
-  cityBackground.className = 'city-background';
-  cityBackground.innerHTML = `
-    <div class="city-background-grid"></div>
-    <div class="city-background-overlay"></div>
-  `;
-  cityContent.appendChild(cityBackground);
+  // Обновляем список зданий
+  renderCityBuildings();
   
-  // Создаем элемент для информации о городе
-  const cityInfoElement = document.createElement('div');
-  cityInfoElement.className = 'city-info rgb-border';
-  cityInfoElement.innerHTML = `
-    <div class="city-level">
-      <i class="fas fa-city rgb-glow"></i>
-      <div class="level-info">
-        <div class="city-level-title">Уровень города: <span class="rgb-text">${fixedCityState.level}</span></div>
-        <div class="city-progress-bar">
-          <div class="city-progress rgb-gradient" style="width: ${(fixedCityState.experience / fixedCityState.nextLevelExp) * 100}%"></div>
+  // Проверяем, можно ли разблокировать новые здания
+  checkAndUnlockBuildings();
+}
+
+// Функция для рендеринга информации о городе
+function renderCityInfo() {
+  const cityInfo = document.getElementById('city-info');
+  if (!cityInfo) return;
+  
+  // Считаем общий доход города в час
+  const totalIncome = getTotalCityIncome();
+  
+  // Создаем HTML для информации о городе
+  cityInfo.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #ff3b30, #0a84ff); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(255, 0, 0, 0.3), 0 0 30px rgba(0, 132, 255, 0.3);">
+        <i class="fas fa-city" style="font-size: 24px; color: white;"></i>
+      </div>
+      <div>
+        <div style="font-size: 18px; font-weight: bold;">Уровень города: <span style="color: #0a84ff;">${cityLevel}</span></div>
+        <div style="width: 150px; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; margin-top: 5px; overflow: hidden;">
+          <div style="height: 100%; width: ${Math.min(100, (cityExperience / cityExperienceNeeded) * 100)}%; background: linear-gradient(90deg, #ff3b30, #0a84ff, #34c759); background-size: 200% auto; animation: gradientText 4s linear infinite;"></div>
         </div>
-        <div class="city-exp-text">${formatCityNumber(fixedCityState.experience)}/${formatCityNumber(fixedCityState.nextLevelExp)}</div>
+        <div style="font-size: 12px; margin-top: 5px;">Опыт: ${formatCityNumber(Math.floor(cityExperience))}/${formatCityNumber(cityExperienceNeeded)}</div>
       </div>
     </div>
-    <div class="city-income">
-      <i class="fas fa-coins rgb-pulse"></i>
-      <span>Бонус к доходу: <span class="rgb-text">+${Math.floor((fixedCityState.incomeMultiplier - 1) * 100)}%</span></span>
+    
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #ff9500, #ffcc00); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(255, 149, 0, 0.3), 0 0 30px rgba(255, 204, 0, 0.3);">
+        <i class="fas fa-coins" style="font-size: 24px; color: white;"></i>
+      </div>
+      <div>
+        <div style="font-size: 18px; font-weight: bold;">Доход города: <span style="color: #ffcc00;">${formatCityNumber(totalIncome)}</span>/час</div>
+        <div style="font-size: 12px;">Множитель: x${cityIncomeMultiplier.toFixed(1)}</div>
+      </div>
     </div>
-    <button class="collect-all-btn rgb-button" onclick="collectAllFixedIncome()">
-      <i class="fas fa-hand-holding-usd"></i>
-      <span>Собрать доход: <span id="unclaimed-income">${formatCityNumber(fixedCityState.unclaimedIncome)}</span></span>
+    
+    <button id="collect-income-button" style="background: linear-gradient(90deg, #34c759, #0a84ff); border: none; padding: 10px 15px; border-radius: 10px; color: white; font-weight: bold; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);">
+      <i class="fas fa-hand-holding-dollar"></i> Собрать доход
+      <span style="background: rgba(0, 0, 0, 0.3); padding: 2px 8px; border-radius: 10px; font-size: 12px;">${formatCityNumber(Math.floor(cityUnclaimedIncome))}</span>
     </button>
   `;
-  cityContent.appendChild(cityInfoElement);
   
-  // Создаем контейнер для зданий
-  const buildingsContainer = document.createElement('div');
-  buildingsContainer.className = 'buildings-container';
-  
-  // Создаем и добавляем карточки зданий
-  for (const [buildingType, config] of Object.entries(FIXED_BUILDINGS)) {
-    const building = fixedCityState.buildings[buildingType];
-    
-    // Если здание ещё не доступно, пропускаем
-    if (!building) continue;
-    
-    // Определяем визуальную стадию
-    const visualStage = getVisualStageForLevel(buildingType, building.level);
-    
-    // Создаем разметку для здания
-    const buildingElement = document.createElement('div');
-    buildingElement.className = `building-card rgb-border ${building.unlocked ? '' : 'locked'}`;
-    buildingElement.dataset.type = buildingType;
-    
-    // Получаем описание здания для текущей визуальной стадии
-    const stageInfo = BUILDING_STAGES[buildingType] ? 
-      BUILDING_STAGES[buildingType].find(stage => stage.level <= building.level) || 
-      { description: config.description } : 
-      { description: config.description };
-    
-    buildingElement.innerHTML = `
-      <div class="building-image stage-${visualStage}">
-        <i class="fas fa-${config.icon}"></i>
-      </div>
-      <div class="building-info">
-        <div class="building-name">${config.name} <span class="building-level">Ур. ${building.level}</span></div>
-        <div class="building-description">${stageInfo.description}</div>
-        <div class="building-income">
-          <i class="fas fa-coins"></i> ${formatCityNumber(building.income)}/час
-        </div>
-      </div>
-      <button class="upgrade-btn ${building.unlocked ? 'rgb-button' : 'locked'}" ${building.unlocked ? 'onclick="upgradeFixedBuilding(\'' + buildingType + '\')"' : ''}>
-        <i class="fas fa-${building.unlocked ? 'arrow-up' : 'lock'}"></i>
-        <span>${building.unlocked ? 'Улучшить: ' + formatCityNumber(getBuildingUpgradePrice(buildingType, building.level)) : 'Заблокировано'}</span>
-      </button>
-    `;
-    
-    buildingsContainer.appendChild(buildingElement);
+  // Добавляем обработчик клика для кнопки сбора дохода
+  const collectButton = document.getElementById('collect-income-button');
+  if (collectButton) {
+    collectButton.addEventListener('click', collectAllFixedIncome);
   }
-  
-  cityContent.appendChild(buildingsContainer);
 }
 
-// Получение визуальной стадии для уровня здания
-function getVisualStageForLevel(buildingType, level) {
-  if (level === 0) return 0;
+// Функция для рендеринга списка зданий
+function renderCityBuildings() {
+  const buildingsGrid = document.getElementById('buildings-grid');
+  if (!buildingsGrid) return;
   
-  const stages = BUILDING_STAGES[buildingType];
-  if (!stages) return 1;
+  // Очищаем контейнер
+  buildingsGrid.innerHTML = '';
   
-  // Находим самую высокую стадию, подходящую для текущего уровня
-  for (let i = stages.length - 1; i >= 0; i--) {
-    if (level >= stages[i].level) {
-      return i + 1;
+  // Для каждого здания создаем карточку
+  buildings.forEach(building => {
+    // Проверяем, разблокировано ли здание
+    if (!building.unlocked) {
+      // Если не разблокировано, показываем заблокированную карточку
+      buildingsGrid.appendChild(createLockedBuildingCard(building));
+    } else {
+      // Если разблокировано, показываем обычную карточку
+      buildingsGrid.appendChild(createBuildingCard(building));
     }
-  }
-  
-  return 1;
+  });
 }
 
-// Получение цены улучшения здания
-function getBuildingUpgradePrice(buildingType, level) {
-  const config = FIXED_BUILDINGS[buildingType];
-  if (!config) return 0;
+// Функция для создания карточки здания
+function createBuildingCard(building) {
+  const card = document.createElement('div');
+  card.className = 'building-card';
+  card.id = `building-${building.id}`;
   
-  // Базовая формула для расчета стоимости улучшения
-  return Math.floor(config.basePrice * Math.pow(1.5, level));
-}
-
-// Улучшение здания
-function upgradeFixedBuilding(buildingType) {
-  console.log(`Улучшаем здание ${buildingType}...`);
+  // Получаем статистику здания
+  const income = calculateBuildingIncome(building.id, building.level);
+  const nextLevelIncome = calculateBuildingIncome(building.id, building.level + 1);
+  const upgradeCost = getBuildingUpgradePrice(building.id, building.level);
+  const visualStage = getVisualStageForLevel(building.id, building.level);
   
-  const building = fixedCityState.buildings[buildingType];
-  if (!building || !building.unlocked) return;
+  // Статистика (жители, урожай и т.д.)
+  const statValue = Math.floor(building.statBase * Math.pow(building.statGrowth, building.level));
   
-  // Получаем стоимость улучшения
-  const upgradeCost = getBuildingUpgradePrice(buildingType, building.level);
+  // Цвет заголовка
+  const headerColor = building.iconColor.replace('linear-gradient', 'rgba').replace(/135deg,\s*/, '').replace(/,\s*[^,]+$/, ', 0.2)');
   
-  // Проверяем, достаточно ли монет (используем глобальную переменную score)
-  if (window.score < upgradeCost) {
-    showCityNotification("Недостаточно монет для улучшения!", "error");
-    return;
-  }
-  
-  // Запоминаем текущую визуальную стадию
-  const oldVisualStage = getVisualStageForLevel(buildingType, building.level);
-  
-  // Списываем монеты
-  window.score -= upgradeCost;
-  if (typeof window.updateScore === 'function') {
-    window.updateScore();
-  }
-  
-  // Увеличиваем уровень здания
-  building.level += 1;
-  
-  // Увеличиваем доход
-  building.income = calculateBuildingIncome(buildingType, building.level);
-  
-  // Получаем новую визуальную стадию
-  const newVisualStage = getVisualStageForLevel(buildingType, building.level);
-  
-  // Показываем уведомление
-  showCityNotification(`${FIXED_BUILDINGS[buildingType].name} улучшен до уровня ${building.level}!`, "success");
-  
-  // Добавляем опыт городу
-  addCityExperience(upgradeCost * 0.1);
-  
-  // Перерисовываем город
-  renderFixedCity();
-  
-  // Если визуальная стадия изменилась, показываем анимацию
-  if (oldVisualStage !== newVisualStage) {
-    playBuildingUpgradeAnimation(buildingType, oldVisualStage, newVisualStage);
-  }
-}
-
-// Расчет дохода здания
-function calculateBuildingIncome(buildingType, level) {
-  const config = FIXED_BUILDINGS[buildingType];
-  if (!config) return 0;
-  
-  // Базовая формула для расчета дохода
-  return Math.floor(config.baseIncome * Math.pow(1.2, level - 1));
-}
-
-// Анимация улучшения здания
-function playBuildingUpgradeAnimation(buildingType, oldStage, newStage) {
-  console.log(`Анимация улучшения ${buildingType} со стадии ${oldStage} до ${newStage}`);
-  
-  // Находим элемент здания
-  const buildingElement = document.querySelector(`.building-card[data-type="${buildingType}"]`);
-  if (!buildingElement) return;
-  
-  // Находим изображение здания
-  const buildingImage = buildingElement.querySelector('.building-image');
-  if (!buildingImage) return;
-  
-  // Добавляем класс для анимации
-  buildingImage.classList.add('upgrading');
-  
-  // Через небольшую задержку меняем стадию и убираем анимацию
-  setTimeout(() => {
-    buildingImage.classList.remove(`stage-${oldStage}`);
-    buildingImage.classList.add(`stage-${newStage}`);
-    
-    setTimeout(() => {
-      buildingImage.classList.remove('upgrading');
-      
-      // Создаем эффект частиц
-      createUpgradeParticles(buildingElement);
-    }, 500);
-  }, 500);
-}
-
-// Создание частиц для анимации улучшения
-function createUpgradeParticles(buildingElement) {
-  const rect = buildingElement.getBoundingClientRect();
-  const centerX = rect.left + rect.width / 2;
-  const centerY = rect.top + rect.height / 2;
-  
-  // Создаем контейнер для частиц, если его нет
-  let particlesContainer = document.getElementById('particles-container');
-  if (!particlesContainer) {
-    particlesContainer = document.createElement('div');
-    particlesContainer.id = 'particles-container';
-    particlesContainer.style.position = 'fixed';
-    particlesContainer.style.top = '0';
-    particlesContainer.style.left = '0';
-    particlesContainer.style.width = '100%';
-    particlesContainer.style.height = '100%';
-    particlesContainer.style.pointerEvents = 'none';
-    particlesContainer.style.zIndex = '1000';
-    document.body.appendChild(particlesContainer);
-  }
-  
-  // Создаем частицы
-  for (let i = 0; i < 20; i++) {
-    const particle = document.createElement('div');
-    particle.className = 'upgrade-particle';
-    
-    // Случайный цвет
-    const colors = ['#ff3b30', '#5ac8fa', '#ffcc00', '#34c759', '#007aff'];
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    
-    // Случайный размер
-    const size = Math.random() * 10 + 5;
-    
-    // Стили частицы
-    particle.style.position = 'absolute';
-    particle.style.width = `${size}px`;
-    particle.style.height = `${size}px`;
-    particle.style.backgroundColor = color;
-    particle.style.borderRadius = '50%';
-    particle.style.boxShadow = `0 0 ${size/2}px ${color}`;
-    particle.style.left = `${centerX}px`;
-    particle.style.top = `${centerY}px`;
-    
-    // Добавляем частицу
-    particlesContainer.appendChild(particle);
-    
-    // Анимируем частицу
-    const angle = Math.random() * Math.PI * 2;
-    const distance = Math.random() * 150 + 50;
-    const duration = Math.random() * 1 + 0.5;
-    
-    setTimeout(() => {
-      particle.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
-      particle.style.opacity = '0';
-      particle.style.transition = `all ${duration}s ease-out`;
-      
-      // Удаляем частицу после анимации
-      setTimeout(() => {
-        particle.remove();
-      }, duration * 1000);
-    }, 10);
-  }
-}
-
-// Добавление опыта городу
-function addCityExperience(amount) {
-  fixedCityState.experience += Math.floor(amount);
-  
-  // Проверяем, достигнут ли следующий уровень
-  if (fixedCityState.experience >= fixedCityState.nextLevelExp) {
-    fixedCityState.level += 1;
-    fixedCityState.experience -= fixedCityState.nextLevelExp;
-    fixedCityState.nextLevelExp = Math.floor(fixedCityState.nextLevelExp * 1.5);
-    
-    // Увеличиваем множитель дохода
-    fixedCityState.incomeMultiplier += 0.05;
-    
-    // Показываем уведомление
-    showCityNotification(`Уровень города повышен до ${fixedCityState.level}!`, "levelup");
-    
-    // Играем эффект
-    playCityLevelUpEffect();
-  }
-}
-
-// Эффект повышения уровня города
-function playCityLevelUpEffect() {
-  const cityContent = document.getElementById('city-content');
-  if (!cityContent) return;
-  
-  // Создаем элемент для анимации
-  const levelUpText = document.createElement('div');
-  levelUpText.className = 'level-up-text';
-  levelUpText.textContent = `УРОВЕНЬ ${fixedCityState.level}!`;
-  
-  levelUpText.style.position = 'absolute';
-  levelUpText.style.top = '50%';
-  levelUpText.style.left = '50%';
-  levelUpText.style.transform = 'translate(-50%, -50%) scale(0.5)';
-  levelUpText.style.fontSize = '48px';
-  levelUpText.style.fontWeight = 'bold';
-  levelUpText.style.color = '#ffcc00';
-  levelUpText.style.textShadow = '0 0 10px rgba(255, 204, 0, 0.8)';
-  levelUpText.style.zIndex = '101';
-  levelUpText.style.opacity = '0';
-  levelUpText.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-  
-  cityContent.appendChild(levelUpText);
-  
-  // Анимация
-  setTimeout(() => {
-    levelUpText.style.opacity = '1';
-    levelUpText.style.transform = 'translate(-50%, -50%) scale(1.2)';
-    
-    setTimeout(() => {
-      levelUpText.style.opacity = '0';
-      levelUpText.style.transform = 'translate(-50%, -50%) scale(2)';
-      
-      setTimeout(() => {
-        levelUpText.remove();
-      }, 500);
-    }, 1500);
-  }, 300);
-  
-  // Создаем частицы для украшения
-  for (let i = 0; i < 50; i++) {
-    createLevelUpParticle();
-  }
-}
-
-// Создать частицу для анимации повышения уровня города
-function createLevelUpParticle() {
-  const cityContent = document.getElementById('city-content');
-  if (!cityContent) return;
-  
-  const particle = document.createElement('div');
-  particle.className = 'level-up-particle';
-  
-  // Случайный размер и цвет
-  const size = Math.random() * 15 + 5;
-  const colors = ['#ffcc00', '#ff3b30', '#0a84ff', '#34c759', '#ff9500', '#af52de'];
-  const color = colors[Math.floor(Math.random() * colors.length)];
-  
-  // Стилизуем частицу
-  particle.style.position = 'absolute';
-  particle.style.width = `${size}px`;
-  particle.style.height = `${size}px`;
-  particle.style.backgroundColor = color;
-  particle.style.borderRadius = '50%';
-  particle.style.boxShadow = `0 0 ${size/2}px ${color}`;
-  particle.style.opacity = '0.8';
-  particle.style.zIndex = '102';
-  particle.style.pointerEvents = 'none';
-  
-  // Начальная позиция (в центре экрана)
-  const rect = cityContent.getBoundingClientRect();
-  const startX = rect.width / 2;
-  const startY = rect.height / 2;
-  
-  particle.style.left = `${startX}px`;
-  particle.style.top = `${startY}px`;
-  
-  // Добавляем в DOM
-  cityContent.appendChild(particle);
-  
-  // Случайное направление и скорость
-  const angle = Math.random() * Math.PI * 2;
-  const distance = Math.random() * 300 + 100;
-  const duration = Math.random() * 1.5 + 0.5;
-  
-  // Анимация разлета
-  setTimeout(() => {
-    particle.style.transition = `all ${duration}s cubic-bezier(0.165, 0.84, 0.44, 1)`;
-    particle.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
-    particle.style.opacity = '0';
-    
-    // Удаляем частицу после анимации
-    setTimeout(() => {
-      particle.remove();
-    }, duration * 1000);
-  }, 10);
-}
-
-// Показ уведомления
-function showCityNotification(message, type = 'info') {
-  if (typeof window.showNotification === 'function') {
-    window.showNotification(message, type);
-    return;
-  }
-  
-  console.log(`[Город] ${message}`);
-  
-  // Создаем своё уведомление, если нет глобальной функции
-  const notification = document.createElement('div');
-  notification.className = `city-notification ${type}`;
-  notification.innerHTML = `
-    <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'success' ? 'check-circle' : type === 'levelup' ? 'star' : 'info-circle'}"></i>
-    <span>${message}</span>
+  card.innerHTML = `
+    <div style="background: ${headerColor}; padding: 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+      <div style="width: 40px; height: 40px; background: ${building.iconColor}; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+        <i class="fas fa-${building.icon}" style="color: white;"></i>
+      </div>
+      <div>
+        <div style="font-weight: bold; font-size: 18px;">${building.name}</div>
+        <div style="font-size: 12px; opacity: 0.7;">Уровень ${building.level}</div>
+      </div>
+    </div>
+    <div style="height: 100px; display: flex; align-items: center; justify-content: center; background: ${headerColor.replace('0.2', '0.05')};" class="building-visual-container">
+      <div class="building-visual" style="font-size: 60px; color: rgba(255, 255, 255, 0.5); text-align: center; width: 100%;">
+        ${visualStage}
+      </div>
+    </div>
+    <div style="padding: 15px;">
+      <div style="font-size: 14px; margin-bottom: 10px;">${building.description}</div>
+      <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 15px;">
+        <div><i class="fas fa-coins" style="color: #ffcc00; margin-right: 5px;"></i> Доход: ${formatCityNumber(income)}/час</div>
+        <div><i class="fas fa-${building.icon}" style="color: ${extractColor(building.iconColor)}; margin-right: 5px;"></i> ${building.statLabel}: ${statValue}</div>
+      </div>
+      <button class="building-upgrade-btn" data-building="${building.id}" style="width: 100%; background: ${building.iconColor}; border: none; padding: 10px; border-radius: 8px; color: white; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;">
+        <i class="fas fa-arrow-up"></i> Улучшить
+        <span>${formatCityNumber(upgradeCost)} <i class="fas fa-coins" style="color: #ffcc00; font-size: 12px;"></i></span>
+      </button>
+      ${building.level < building.maxLevel ? `
+        <div style="font-size: 12px; text-align: center; margin-top: 5px; opacity: 0.7;">
+          Следующий уровень: +${formatCityNumber(nextLevelIncome - income)}/час
+        </div>
+      ` : `
+        <div style="font-size: 12px; text-align: center; margin-top: 5px; opacity: 0.7;">
+          Максимальный уровень достигнут
+        </div>
+      `}
+    </div>
   `;
   
-  // Стили уведомления
-  notification.style.position = 'fixed';
-  notification.style.bottom = '20px';
-  notification.style.left = '50%';
-  notification.style.transform = 'translateX(-50%)';
-  notification.style.backgroundColor = type === 'error' ? '#ff3b30' : type === 'success' ? '#34c759' : type === 'levelup' ? '#ffcc00' : '#007aff';
-  notification.style.color = '#fff';
-  notification.style.padding = '10px 20px';
-  notification.style.borderRadius = '5px';
-  notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
-  notification.style.zIndex = '10000';
-  notification.style.opacity = '0';
-  notification.style.transition = 'all 0.3s ease';
-  
-  document.body.appendChild(notification);
-  
-  // Анимация появления и исчезновения
+  // Добавляем обработчик клика для кнопки улучшения
   setTimeout(() => {
-    notification.style.opacity = '1';
-    
-    setTimeout(() => {
-      notification.style.opacity = '0';
-      
-      setTimeout(() => {
-        notification.remove();
-      }, 300);
-    }, 3000);
-  }, 10);
+    const upgradeButton = card.querySelector('.building-upgrade-btn');
+    if (upgradeButton) {
+      upgradeButton.addEventListener('click', function() {
+        const buildingId = this.getAttribute('data-building');
+        upgradeFixedBuilding(buildingId);
+      });
+    }
+  }, 0);
+  
+  return card;
 }
 
-// Форматирование числа для отображения
-function formatCityNumber(num) {
-  if (typeof window.formatNumber === 'function') {
-    return window.formatNumber(num);
+// Функция для создания заблокированной карточки здания
+function createLockedBuildingCard(building) {
+  const card = document.createElement('div');
+  card.className = 'building-card';
+  card.id = `building-${building.id}-locked`;
+  
+  // Цвет заголовка (затемненный)
+  const headerColor = building.iconColor.replace('linear-gradient', 'rgba').replace(/135deg,\s*/, '').replace(/,\s*[^,]+$/, ', 0.1)');
+  
+  card.innerHTML = `
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2; border-radius: 10px;">
+      <i class="fas fa-lock" style="font-size: 40px; color: #ff3b30; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(255, 59, 48, 0.7));"></i>
+      <div style="text-align: center; color: white; font-size: 16px; font-weight: bold;">Требуется уровень города ${building.requiredLevel}</div>
+    </div>
+    
+    <div style="background: ${headerColor}; padding: 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+      <div style="width: 40px; height: 40px; background: ${building.iconColor.replace(/rgb[^)]+\)/, 'rgba(100, 100, 100, 0.5)')}; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+        <i class="fas fa-${building.icon}" style="color: rgba(255, 255, 255, 0.5);"></i>
+      </div>
+      <div>
+        <div style="font-weight: bold; font-size: 18px; opacity: 0.5;">${building.name}</div>
+        <div style="font-size: 12px; opacity: 0.5;">Уровень 0</div>
+      </div>
+    </div>
+    <div style="height: 100px; display: flex; align-items: center; justify-content: center; background: ${headerColor.replace('0.1', '0.05')};">
+      <div style="font-size: 60px; color: rgba(255, 255, 255, 0.2);">
+        <i class="fas fa-${building.icon}"></i>
+      </div>
+    </div>
+    <div style="padding: 15px;">
+      <div style="font-size: 14px; margin-bottom: 10px; opacity: 0.5;">${building.description}</div>
+      <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 15px; opacity: 0.5;">
+        <div><i class="fas fa-coins" style="color: rgba(255, 204, 0, 0.5); margin-right: 5px;"></i> Доход: ???/час</div>
+        <div><i class="fas fa-${building.icon}" style="color: rgba(100, 100, 100, 0.5); margin-right: 5px;"></i> ${building.statLabel}: ???</div>
+      </div>
+      <button style="width: 100%; background: #333; border: none; padding: 10px; border-radius: 8px; color: white; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; opacity: 0.5; cursor: not-allowed;">
+        <i class="fas fa-lock"></i> Заблокировано
+      </button>
+    </div>
+  `;
+  
+  return card;
+}
+
+// Функция получения визуального представления для уровня здания
+function getVisualStageForLevel(buildingId, level) {
+  // Если уровень 0, показываем только иконку
+  if (level === 0) {
+    const building = buildings.find(b => b.id === buildingId);
+    return `<i class="fas fa-${building.icon}"></i>`;
   }
   
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(1) + 'M';
-  } else if (num >= 1000) {
-    return (num / 1000).toFixed(1) + 'K';
-  } else {
-    return num.toString();
+  // Генерируем визуальное представление в зависимости от типа здания
+  switch (buildingId) {
+    case 'house':
+      if (level <= 3) {
+        return `<i class="fas fa-home"></i>`;
+      } else if (level <= 6) {
+        return `<div style="display: flex; justify-content: center; gap: 5px;"><i class="fas fa-home"></i><i class="fas fa-home"></i></div><div style="font-size: 12px;">Жилой район</div>`;
+      } else {
+        return `<div style="display: flex; justify-content: center; gap: 5px;"><i class="fas fa-building"></i><i class="fas fa-building"></i></div><div style="font-size: 12px;">Жилой квартал</div>`;
+      }
+    case 'farm':
+      if (level <= 3) {
+        return `<i class="fas fa-leaf"></i>`;
+      } else if (level <= 6) {
+        return `<div style="display: flex; justify-content: center; gap: 5px;"><i class="fas fa-leaf"></i><i class="fas fa-leaf"></i></div><div style="font-size: 12px;">Крупная ферма</div>`;
+      } else {
+        return `<div style="display: flex; justify-content: center; gap: 5px;"><i class="fas fa-leaf"></i><i class="fas fa-leaf"></i><i class="fas fa-leaf"></i></div><div style="font-size: 12px;">Плантация</div>`;
+      }
+    case 'mine':
+      if (level <= 3) {
+        return `<i class="fas fa-gem"></i>`;
+      } else if (level <= 5) {
+        return `<div style="display: flex; justify-content: center; gap: 5px;"><i class="fas fa-gem"></i><i class="fas fa-gem"></i></div><div style="font-size: 12px;">Улучшенная шахта</div>`;
+      } else {
+        return `<div style="display: flex; justify-content: center; gap: 5px;"><i class="fas fa-gem"></i><i class="fas fa-bomb"></i><i class="fas fa-gem"></i></div><div style="font-size: 12px;">Глубинный карьер</div>`;
+      }
+    case 'lab':
+      if (level <= 2) {
+        return `<i class="fas fa-flask"></i>`;
+      } else if (level <= 4) {
+        return `<div style="display: flex; justify-content: center; gap: 5px;"><i class="fas fa-flask"></i><i class="fas fa-microscope"></i></div><div style="font-size: 12px;">Исследовательский центр</div>`;
+      } else {
+        return `<div style="display: flex; justify-content: center; gap: 5px;"><i class="fas fa-flask"></i><i class="fas fa-atom"></i><i class="fas fa-microscope"></i></div><div style="font-size: 12px;">Лаборатория</div>`;
+      }
+    case 'tower':
+      if (level <= 2) {
+        return `<i class="fas fa-hat-wizard"></i>`;
+      } else if (level <= 4) {
+        return `<div style="display: flex; justify-content: center; gap: 5px;"><i class="fas fa-hat-wizard"></i><i class="fas fa-magic"></i></div><div style="font-size: 12px;">Башня магии</div>`;
+      } else {
+        return `<div style="display: flex; justify-content: center; gap: 5px;"><i class="fas fa-hat-wizard"></i><i class="fas fa-dragon"></i><i class="fas fa-magic"></i></div><div style="font-size: 12px;">Магическая цитадель</div>`;
+      }
+    case 'temple':
+      if (level <= 2) {
+        return `<i class="fas fa-place-of-worship"></i>`;
+      } else if (level <= 4) {
+        return `<div style="display: flex; justify-content: center; gap: 5px;"><i class="fas fa-place-of-worship"></i><i class="fas fa-pray"></i></div><div style="font-size: 12px;">Святилище</div>`;
+      } else {
+        return `<div style="display: flex; justify-content: center; gap: 5px;"><i class="fas fa-place-of-worship"></i><i class="fas fa-om"></i><i class="fas fa-pray"></i></div><div style="font-size: 12px;">Храм древних</div>`;
+      }
+    case 'portal':
+      if (level <= 1) {
+        return `<i class="fas fa-door-open"></i>`;
+      } else if (level === 2) {
+        return `<div style="display: flex; justify-content: center; gap: 5px;"><i class="fas fa-door-open"></i><i class="fas fa-bolt"></i></div><div style="font-size: 12px;">Нестабильный портал</div>`;
+      } else {
+        return `<div style="display: flex; justify-content: center; gap: 5px;"><i class="fas fa-door-open"></i><i class="fas fa-bolt"></i><i class="fas fa-skull"></i></div><div style="font-size: 12px;">Врата бездны</div>`;
+      }
+    default:
+      return `<i class="fas fa-question"></i>`;
   }
 }
 
-// Собрать весь накопленный доход
-function collectAllFixedIncome() {
-  if (fixedCityState.unclaimedIncome <= 0) {
-    showCityNotification("Пока нечего собирать!", "info");
+// Функция для получения стоимости улучшения здания
+function getBuildingUpgradePrice(buildingId, level) {
+  // Если здание уже на максимальном уровне, возвращаем очень большое число
+  const building = buildings.find(b => b.id === buildingId);
+  if (!building || level >= building.maxLevel) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+  
+  // Базовая стоимость здания
+  const baseCost = building.baseCost;
+  // Множитель роста стоимости
+  const costGrowth = building.costGrowth;
+  
+  // Формула: baseCost * (costGrowth ^ level)
+  return Math.floor(baseCost * Math.pow(costGrowth, level));
+}
+
+// Функция для улучшения здания
+function upgradeFixedBuilding(buildingId) {
+  // Находим здание в массиве
+  const buildingIndex = buildings.findIndex(b => b.id === buildingId);
+  if (buildingIndex === -1) {
+    console.error('Здание не найдено:', buildingId);
     return;
   }
   
-  const amount = fixedCityState.unclaimedIncome;
+  // Здание найдено
+  const building = buildings[buildingIndex];
   
-  // Добавляем монеты к общему счету
-  if (typeof window.score !== 'undefined') {
-    window.score += amount;
-    if (typeof window.updateScore === 'function') {
-      window.updateScore();
-    }
+  // Проверяем, не достигнут ли максимальный уровень
+  if (building.level >= building.maxLevel) {
+    showCityNotification('Здание уже на максимальном уровне!', 'warning');
+    return;
   }
   
-  // Сбрасываем несобранный доход
-  fixedCityState.unclaimedIncome = 0;
-  fixedCityState.lastCollectTime = Date.now();
+  // Получаем стоимость улучшения
+  const upgradeCost = getBuildingUpgradePrice(buildingId, building.level);
+  
+  // Проверяем, достаточно ли средств
+  const score = parseInt(document.getElementById('score').textContent.replace(/,/g, '')) || 0;
+  if (score < upgradeCost) {
+    showCityNotification('Недостаточно средств для улучшения!', 'error');
+    return;
+  }
+  
+  // Списываем средства
+  let newScore = score - upgradeCost;
+  document.getElementById('score').textContent = formatCityNumber(newScore);
+  
+  // Запоминаем текущую визуальную стадию
+  const oldStage = getVisualStageForLevel(buildingId, building.level);
+  
+  // Повышаем уровень здания
+  buildings[buildingIndex].level += 1;
+  
+  // Получаем новую визуальную стадию
+  const newStage = getVisualStageForLevel(buildingId, building.level);
+  
+  // Добавляем опыт городу (1/4 от стоимости улучшения)
+  addCityExperience(Math.floor(upgradeCost / 4));
   
   // Показываем уведомление
-  showCityNotification(`Собрано ${formatCityNumber(amount)} монет!`, "success");
+  showCityNotification(`${building.name} улучшен до уровня ${building.level}!`, 'success');
   
-  // Анимация сбора монет
-  animateCoinCollection(amount);
+  // Воспроизводим анимацию улучшения
+  playBuildingUpgradeAnimation(buildingId, oldStage, newStage);
   
   // Обновляем город
   renderFixedCity();
+  
+  // Обновляем статистику дохода в час
+  updateIncomeStats();
+  
+  // Сохраняем данные города
+  saveCityData();
 }
 
-// Анимация сбора монет
-function animateCoinCollection(amount) {
+// Функция расчета дохода здания
+function calculateBuildingIncome(buildingId, level) {
+  // Если уровень 0, доход 0
+  if (level === 0) return 0;
+  
+  // Находим здание в массиве
+  const building = buildings.find(b => b.id === buildingId);
+  if (!building) return 0;
+  
+  // Базовый доход здания
+  const baseIncome = building.baseIncome;
+  // Множитель роста дохода
+  const incomeGrowth = building.incomeGrowth;
+  
+  // Формула: baseIncome * (incomeGrowth ^ (level - 1))
+  const income = baseIncome * Math.pow(incomeGrowth, level - 1);
+  
+  // Применяем множитель дохода города
+  return Math.floor(income * cityIncomeMultiplier);
+}
+
+// Функция воспроизведения анимации улучшения здания
+function playBuildingUpgradeAnimation(buildingId, oldStage, newStage) {
+  // Находим элемент здания
+  const buildingElement = document.getElementById(`building-${buildingId}`);
+  if (!buildingElement) return;
+  
+  // Добавляем класс анимации
+  buildingElement.classList.add('upgrading');
+  
+  // Находим контейнер визуала здания
+  const visualContainer = buildingElement.querySelector('.building-visual-container');
+  if (!visualContainer) return;
+  
+  // Создаем эффект вспышки
+  const flash = document.createElement('div');
+  flash.className = 'level-up-flash';
+  flash.style.position = 'absolute';
+  flash.style.top = '0';
+  flash.style.left = '0';
+  flash.style.width = '100%';
+  flash.style.height = '100%';
+  flash.style.background = 'rgba(255, 255, 255, 0.5)';
+  flash.style.opacity = '0';
+  flash.style.animation = 'flash 0.5s ease-out';
+  flash.style.pointerEvents = 'none';
+  visualContainer.style.position = 'relative';
+  visualContainer.appendChild(flash);
+  
+  // Создаем частицы улучшения
+  createUpgradeParticles(buildingElement);
+  
+  // Находим визуал здания
+  const visualElement = buildingElement.querySelector('.building-visual');
+  if (visualElement) {
+    // Меняем визуал здания на новый
+    visualElement.innerHTML = newStage;
+    
+    // Анимируем изменение
+    visualElement.style.animation = 'upgradeAnimation 0.5s ease-in-out';
+    
+    // Удаляем анимацию после завершения
+    setTimeout(() => {
+      visualElement.style.animation = '';
+    }, 500);
+  }
+  
+  // Удаляем класс анимации после завершения
+  setTimeout(() => {
+    buildingElement.classList.remove('upgrading');
+    
+    // Удаляем эффект вспышки
+    if (flash.parentNode) {
+      flash.parentNode.removeChild(flash);
+    }
+  }, 500);
+}
+
+// Функция создания частиц при улучшении здания
+function createUpgradeParticles(buildingElement) {
+  if (!buildingElement) return;
+  
+  // Получаем размеры и позицию здания
+  const rect = buildingElement.getBoundingClientRect();
+  
+  // Цвета частиц
+  const colors = ['#ff3b30', '#ff9500', '#ffcc00', '#34c759', '#5ac8fa', '#0a84ff', '#af52de'];
+  
+  // Создаем 15 частиц
+  for (let i = 0; i < 15; i++) {
+    // Создаем элемент частицы
+    const particle = document.createElement('div');
+    particle.className = 'upgrade-particle';
+    
+    // Случайная позиция внутри здания
+    const startX = Math.random() * rect.width;
+    const startY = Math.random() * (rect.height / 2) + rect.height / 4;
+    
+    // Случайное смещение для анимации
+    const endX = (Math.random() - 0.5) * 100;
+    const endY = (Math.random() - 0.5) * 100;
+    
+    // Случайный цвет
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    
+    // Случайный размер
+    const size = 4 + Math.random() * 8;
+    
+    // Установка стилей
+    particle.style.left = `${startX}px`;
+    particle.style.top = `${startY}px`;
+    particle.style.width = `${size}px`;
+    particle.style.height = `${size}px`;
+    particle.style.backgroundColor = color;
+    particle.style.boxShadow = `0 0 ${size * 2}px ${color}`;
+    
+    // Добавляем CSS переменные для анимации
+    particle.style.setProperty('--x', `${endX}px`);
+    particle.style.setProperty('--y', `${endY}px`);
+    
+    // Добавляем частицу
+    buildingElement.appendChild(particle);
+    
+    // Удаляем частицу после завершения анимации
+    setTimeout(() => {
+      if (particle.parentNode) {
+        particle.parentNode.removeChild(particle);
+      }
+    }, 1500);
+  }
+}
+
+// Функция добавления опыта городу
+function addCityExperience(amount) {
+  // Добавляем опыт
+  cityExperience += amount;
+  
+  // Проверяем, не достигнут ли следующий уровень
+  while (cityExperience >= cityExperienceNeeded) {
+    // Вычитаем необходимый опыт
+    cityExperience -= cityExperienceNeeded;
+    
+    // Повышаем уровень города
+    cityLevel += 1;
+    
+    // Увеличиваем требуемый опыт на следующий уровень (на 50% больше)
+    cityExperienceNeeded = Math.floor(cityExperienceNeeded * 1.5);
+    
+    // Воспроизводим эффект повышения уровня
+    playCityLevelUpEffect();
+    
+    // Проверяем, можно ли разблокировать новые здания
+    checkAndUnlockBuildings();
+    
+    // Показываем уведомление
+    showCityNotification(`Город достиг уровня ${cityLevel}!`, 'success');
+  }
+}
+
+// Функция воспроизведения эффекта повышения уровня города
+function playCityLevelUpEffect() {
+  // Находим заголовок города
+  const cityTitle = document.getElementById('city-title');
+  if (!cityTitle) return;
+  
+  // Добавляем класс анимации
+  cityTitle.classList.add('level-up');
+  
+  // Создаем эффект вспышки
+  const cityTab = document.getElementById('fixed-city-tab');
+  if (cityTab) {
+    const flash = document.createElement('div');
+    flash.className = 'level-up-flash';
+    flash.style.position = 'fixed';
+    flash.style.top = '0';
+    flash.style.left = '0';
+    flash.style.width = '100%';
+    flash.style.height = '100%';
+    flash.style.background = 'rgba(255, 255, 255, 0.5)';
+    flash.style.opacity = '0';
+    flash.style.animation = 'flash 0.5s ease-out';
+    flash.style.pointerEvents = 'none';
+    flash.style.zIndex = '10001';
+    cityTab.appendChild(flash);
+    
+    // Удаляем эффект вспышки после анимации
+    setTimeout(() => {
+      if (flash.parentNode) {
+        flash.parentNode.removeChild(flash);
+      }
+    }, 500);
+  }
+  
+  // Создаем частицы
+  createLevelUpParticle();
+  
+  // Удаляем класс анимации после завершения
+  setTimeout(() => {
+    cityTitle.classList.remove('level-up');
+  }, 500);
+}
+
+// Функция создания частиц при повышении уровня города
+function createLevelUpParticle() {
+  // Получаем заголовок города для размещения частиц
+  const cityTitle = document.getElementById('city-title');
+  if (!cityTitle) return;
+  
+  // Получаем размеры и позицию заголовка
+  const rect = cityTitle.getBoundingClientRect();
+  
+  // Цвета частиц
+  const colors = ['#ff3b30', '#ff9500', '#ffcc00', '#34c759', '#5ac8fa', '#0a84ff', '#af52de'];
+  
+  // Создаем 30 частиц
+  for (let i = 0; i < 30; i++) {
+    // Создаем элемент частицы
+    const particle = document.createElement('div');
+    particle.className = 'level-up-particle';
+    
+    // Позиция по центру заголовка
+    const startX = rect.width / 2;
+    const startY = rect.height / 2;
+    
+    // Случайное смещение для анимации
+    const endX = (Math.random() - 0.5) * 200;
+    const endY = (Math.random() - 0.5) * 200;
+    const rotation = Math.random() * 360;
+    
+    // Случайный цвет
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    
+    // Случайный размер
+    const size = 5 + Math.random() * 10;
+    
+    // Установка стилей
+    particle.style.left = `${startX}px`;
+    particle.style.top = `${startY}px`;
+    particle.style.width = `${size}px`;
+    particle.style.height = `${size}px`;
+    particle.style.backgroundColor = color;
+    particle.style.boxShadow = `0 0 ${size * 2}px ${color}`;
+    
+    // Добавляем CSS переменные для анимации
+    particle.style.setProperty('--x', `${endX}px`);
+    particle.style.setProperty('--y', `${endY}px`);
+    particle.style.setProperty('--r', `${rotation}deg`);
+    
+    // Добавляем частицу
+    cityTitle.appendChild(particle);
+    
+    // Удаляем частицу после завершения анимации
+    setTimeout(() => {
+      if (particle.parentNode) {
+        particle.parentNode.removeChild(particle);
+      }
+    }, 2000);
+  }
+}
+
+// Функция отображения уведомления в городе
+function showCityNotification(message, type = 'info') {
+  // Находим контейнер уведомления
+  const notificationContainer = document.getElementById('city-notification');
+  if (!notificationContainer) return;
+  
+  // Устанавливаем содержимое уведомления
+  let icon = '';
+  switch (type) {
+    case 'success':
+      icon = '<i class="fas fa-check-circle" style="color: #34c759;"></i>';
+      break;
+    case 'error':
+      icon = '<i class="fas fa-times-circle" style="color: #ff3b30;"></i>';
+      break;
+    case 'warning':
+      icon = '<i class="fas fa-exclamation-triangle" style="color: #ffcc00;"></i>';
+      break;
+    default:
+      icon = '<i class="fas fa-info-circle" style="color: #0a84ff;"></i>';
+  }
+  
+  notificationContainer.innerHTML = `
+    <div class="notification-content">
+      ${icon}
+      <span>${message}</span>
+    </div>
+  `;
+  
+  // Показываем уведомление
+  notificationContainer.classList.add('visible');
+  
+  // Скрываем уведомление через 3 секунды
+  setTimeout(() => {
+    notificationContainer.classList.remove('visible');
+  }, 3000);
+}
+
+// Функция форматирования чисел
+function formatCityNumber(num) {
+  // Если число меньше 1000, возвращаем как есть
+  if (num < 1000) return num.toString();
+  
+  // Для больших чисел используем сокращения
+  if (num < 1000000) {
+    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  }
+  
+  if (num < 1000000000) {
+    return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  }
+  
+  return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
+}
+
+// Функция для сбора всего дохода города
+function collectAllFixedIncome() {
+  // Проверяем, есть ли несобранный доход
+  if (cityUnclaimedIncome <= 0) {
+    showCityNotification('Нет доступного дохода для сбора!', 'warning');
+    return;
+  }
+  
+  // Получаем текущий счет игрока
   const scoreElement = document.getElementById('score');
   if (!scoreElement) return;
   
-  // Создаем контейнер для анимации монет, если его нет
-  let coinContainer = document.getElementById('coin-animation-container');
-  if (!coinContainer) {
-    coinContainer = document.createElement('div');
-    coinContainer.id = 'coin-animation-container';
-    coinContainer.style.position = 'fixed';
-    coinContainer.style.top = '0';
-    coinContainer.style.left = '0';
-    coinContainer.style.width = '100%';
-    coinContainer.style.height = '100%';
-    coinContainer.style.pointerEvents = 'none';
-    coinContainer.style.zIndex = '9999';
-    document.body.appendChild(coinContainer);
-  }
+  const currentScore = parseInt(scoreElement.textContent.replace(/,/g, '')) || 0;
   
-  // Получаем координаты кнопки сбора и счетчика монет
-  const collectButton = document.querySelector('.collect-all-btn');
+  // Округляем несобранный доход
+  const incomeToCollect = Math.floor(cityUnclaimedIncome);
+  
+  // Увеличиваем счет игрока
+  scoreElement.textContent = formatCityNumber(currentScore + incomeToCollect);
+  
+  // Сбрасываем несобранный доход
+  cityUnclaimedIncome = 0;
+  
+  // Обновляем время последнего сбора
+  cityLastUpdate = Date.now();
+  
+  // Показываем уведомление
+  showCityNotification(`Собрано ${formatCityNumber(incomeToCollect)} монет!`, 'success');
+  
+  // Анимируем сбор монет
+  animateCoinCollection(incomeToCollect);
+  
+  // Обновляем город
+  renderFixedCity();
+  
+  // Сохраняем данные города
+  saveCityData();
+}
+
+// Функция анимации сбора монет
+function animateCoinCollection(amount) {
+  // Находим кнопку сбора дохода
+  const collectButton = document.getElementById('collect-income-button');
   if (!collectButton) return;
   
-  const collectRect = collectButton.getBoundingClientRect();
-  const scoreRect = scoreElement.getBoundingClientRect();
+  // Позиция кнопки
+  const rect = collectButton.getBoundingClientRect();
   
-  // Создаем несколько летящих монет
-  const coinCount = Math.min(20, Math.max(5, Math.floor(amount / 100)));
+  // Создаем анимированный текст
+  const floatingText = document.createElement('div');
+  floatingText.className = 'floating-text';
+  floatingText.textContent = `+${formatCityNumber(amount)}`;
+  floatingText.style.left = `${rect.left + rect.width / 2}px`;
+  floatingText.style.top = `${rect.top}px`;
+  floatingText.style.color = '#34c759';
   
-  for (let i = 0; i < coinCount; i++) {
-    // Создаем элемент монеты
-    const coin = document.createElement('div');
-    coin.className = 'flying-coin';
-    
-    // Стилизуем монету
-    coin.style.position = 'absolute';
-    coin.style.width = '20px';
-    coin.style.height = '20px';
-    coin.style.borderRadius = '50%';
-    coin.style.background = 'radial-gradient(circle at 30% 30%, #ffec8b, #ffd700 30%, #b8860b)';
-    coin.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.8)';
-    coin.style.display = 'flex';
-    coin.style.alignItems = 'center';
-    coin.style.justifyContent = 'center';
-    coin.style.fontSize = '12px';
-    coin.style.fontWeight = 'bold';
-    coin.style.color = '#734f19';
-    coin.style.zIndex = '10000';
-    coin.innerHTML = '$';
-    
-    // Случайная начальная позиция вокруг кнопки сбора
-    const startX = collectRect.left + collectRect.width / 2 + (Math.random() - 0.5) * 40;
-    const startY = collectRect.top + collectRect.height / 2 + (Math.random() - 0.5) * 40;
-    
-    coin.style.left = `${startX}px`;
-    coin.style.top = `${startY}px`;
-    
-    // Добавляем монету в контейнер
-    coinContainer.appendChild(coin);
-    
-    // Задержка перед началом анимации
-    const delay = Math.random() * 200;
-    
-    // Запускаем анимацию монеты
-    setTimeout(() => {
-      // Вычисляем кривую Безье для более естественного движения
-      const controlX = startX + (scoreRect.left + scoreRect.width / 2 - startX) * 0.3 + (Math.random() - 0.5) * 100;
-      const controlY = startY - 100 - Math.random() * 100;
+  // Добавляем в body
+  document.body.appendChild(floatingText);
+  
+  // Удаляем после окончания анимации
+  setTimeout(() => {
+    if (floatingText.parentNode) {
+      floatingText.parentNode.removeChild(floatingText);
+    }
+  }, 1500);
+}
+
+// Функция расчета накопленного дохода
+function calculateUnclaimedIncome() {
+  // Получаем текущее время
+  const currentTime = Date.now();
+  
+  // Рассчитываем прошедшее время в часах
+  const hoursPassed = (currentTime - cityLastUpdate) / (1000 * 60 * 60);
+  
+  // Рассчитываем доход за прошедшее время
+  const income = getTotalCityIncome() * hoursPassed;
+  
+  // Добавляем к накопленному доходу
+  cityUnclaimedIncome += income;
+  
+  // Обновляем время последнего обновления
+  cityLastUpdate = currentTime;
+}
+
+// Функция проверки и разблокировки зданий
+function checkAndUnlockBuildings() {
+  let buildingsUnlocked = false;
+  
+  // Проверяем каждое здание
+  buildings.forEach((building, index) => {
+    // Если здание не разблокировано и уровень города достаточный
+    if (!building.unlocked && cityLevel >= building.requiredLevel) {
+      // Разблокируем здание
+      buildings[index].unlocked = true;
+      buildingsUnlocked = true;
       
-      const duration = 0.5 + Math.random() * 0.5;
-      
-      coin.style.transition = `all ${duration}s cubic-bezier(.17,.67,.83,.67)`;
-      
-      // Анимируем перемещение монеты к счетчику
-      setTimeout(() => {
-        coin.style.left = `${scoreRect.left + scoreRect.width / 2}px`;
-        coin.style.top = `${scoreRect.top + scoreRect.height / 2}px`;
-        coin.style.opacity = '0';
-        coin.style.transform = 'scale(0.5)';
-        
-        // Удаляем монету после завершения анимации
-        setTimeout(() => {
-          coin.remove();
-        }, duration * 1000);
-      }, 10);
-    }, delay);
+      // Показываем уведомление
+      showCityNotification(`Разблокировано новое здание: ${building.name}!`, 'success');
+    }
+  });
+  
+  // Если были разблокированы здания, обновляем город
+  if (buildingsUnlocked) {
+    renderFixedCity();
   }
 }
 
-// Создадим глобальный объект для доступа к функциям города
-window.fixedCity = {
-  openCityTab: openFixedCityTab,
-  renderCity: renderFixedCity,
-  upgradeBuilding: upgradeFixedBuilding,
-  collectAllIncome: collectAllFixedIncome
-};
+// Функция получения общего дохода города в час
+function getTotalCityIncome() {
+  // Суммируем доходы всех зданий
+  return buildings.reduce((total, building) => {
+    return total + calculateBuildingIncome(building.id, building.level);
+  }, 0);
+}
 
-// Добавление обработчиков при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('Настраиваем обработчики для города...');
+// Функция обновления статистики дохода в главном интерфейсе
+function updateIncomeStats() {
+  // Находим элемент счетчика дохода в час
+  const incomePerHour = document.getElementById('income-per-hour');
+  if (!incomePerHour) return;
   
-  // Добавляем обработчик для кнопки города
-  const cityButton = document.querySelector('.nav-button[data-tab="city"]');
-  if (cityButton) {
-    cityButton.onclick = function() {
-      openFixedCityTab();
+  // Обновляем счетчик
+  incomePerHour.textContent = formatCityNumber(getTotalCityIncome());
+}
+
+// Функция извлечения цвета из градиента для использования в иконках
+function extractColor(gradient) {
+  // Простое извлечение цвета из строки градиента
+  // Пример: 'linear-gradient(135deg, #ff3b30, #ff9500)' -> '#ff3b30'
+  const match = gradient.match(/#[0-9a-f]{6}/i);
+  return match ? match[0] : '#ffffff';
+}
+
+// Функция сохранения данных города
+function saveCityData() {
+  try {
+    // Создаем объект с данными
+    const cityData = {
+      cityLevel,
+      cityExperience,
+      cityExperienceNeeded,
+      cityUnclaimedIncome,
+      cityIncomeMultiplier,
+      cityLastUpdate,
+      buildings: buildings.map(b => ({ id: b.id, level: b.level, unlocked: b.unlocked }))
     };
-  }
-  
-  // Каждые 10 секунд обновляем несобранный доход
-  setInterval(() => {
-    // Рассчитываем накопившийся доход
-    const totalIncomePerHour = getTotalFixedCityIncome();
-    const now = Date.now();
-    const elapsed = (now - fixedCityState.lastCollectTime) / 3600000; // Часы
     
-    fixedCityState.unclaimedIncome += Math.floor(totalIncomePerHour * elapsed);
-    fixedCityState.lastCollectTime = now;
-    
-    // Обновляем отображение, если открыта вкладка города
-    const cityTab = document.getElementById('city-tab');
-    if (cityTab && cityTab.style.display !== 'none') {
-      const unclaimedElement = document.getElementById('unclaimed-income');
-      if (unclaimedElement) {
-        unclaimedElement.textContent = formatCityNumber(fixedCityState.unclaimedIncome);
-      }
-    }
-  }, 10000);
-});
-
-// Получение общего дохода города в час
-function getTotalFixedCityIncome() {
-  let totalIncome = 0;
-  
-  for (const buildingType in fixedCityState.buildings) {
-    const building = fixedCityState.buildings[buildingType];
-    if (building.level > 0) {
-      totalIncome += building.income;
-    }
+    // Сохраняем в localStorage
+    localStorage.setItem('tapkrakenCityData', JSON.stringify(cityData));
+    console.log('Данные города сохранены');
+  } catch (error) {
+    console.error('Ошибка при сохранении данных города:', error);
   }
-  
-  // Применяем бонусный множитель города
-  return Math.floor(totalIncome * fixedCityState.incomeMultiplier);
 }
+
+// Функция загрузки данных города
+function loadCityData() {
+  try {
+    // Получаем данные из localStorage
+    const savedData = localStorage.getItem('tapkrakenCityData');
+    
+    // Если данных нет, используем значения по умолчанию
+    if (!savedData) {
+      console.log('Сохраненных данных города не найдено, используем значения по умолчанию');
+      return;
+    }
+    
+    // Парсим данные
+    const cityData = JSON.parse(savedData);
+    
+    // Загружаем основные данные
+    cityLevel = cityData.cityLevel || 1;
+    cityExperience = cityData.cityExperience || 0;
+    cityExperienceNeeded = cityData.cityExperienceNeeded || 100;
+    cityUnclaimedIncome = cityData.cityUnclaimedIncome || 0;
+    cityIncomeMultiplier = cityData.cityIncomeMultiplier || 1;
+    cityLastUpdate = cityData.cityLastUpdate || Date.now();
+    
+    // Загружаем данные зданий
+    if (cityData.buildings && Array.isArray(cityData.buildings)) {
+      cityData.buildings.forEach(savedBuilding => {
+        const index = buildings.findIndex(b => b.id === savedBuilding.id);
+        if (index !== -1) {
+          buildings[index].level = savedBuilding.level || 0;
+          buildings[index].unlocked = savedBuilding.unlocked || false;
+        }
+      });
+    }
+    
+    console.log('Данные города загружены');
+  } catch (error) {
+    console.error('Ошибка при загрузке данных города:', error);
+  }
+}
+
+// Добавляем обработчики событий после загрузки страницы
+document.addEventListener('DOMContentLoaded', function() {
+  // Находим все кнопки, открывающие город
+  const cityButtons = document.querySelectorAll('.city-button, .nav-button[data-tab="city"]');
+  
+  // Добавляем обработчики для всех найденных кнопок
+  cityButtons.forEach(button => {
+    // Удаляем старые обработчики (если есть)
+    const newButton = button.cloneNode(true);
+    if (button.parentNode) {
+      button.parentNode.replaceChild(newButton, button);
+    }
+    
+    // Добавляем новый обработчик
+    newButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      openFixedCityTab();
+    });
+  });
+  
+  // Загружаем данные города
+  loadCityData();
+});

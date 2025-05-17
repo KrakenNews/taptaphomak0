@@ -9,13 +9,228 @@
   <!-- Font Awesome для иконок -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="city.css">
   <!-- SEO метатеги -->
   <meta name="description" content="TapKraken - захватывающая кликер-игра с Кракеном в сине-красно-белой гамме. Собирай монеты, улучшай своего Кракена и соревнуйся с друзьями!">
   <!-- Open Graph tags -->
   <meta property="og:title" content="TapKraken" />
   <meta property="og:description" content="Кликай на Кракена, собирай монеты и стань лучшим в мире TapKraken!" />
   <meta property="og:type" content="website" />
+  <!-- Добавляем стили для города -->
+  <style>
+    /* Стили для города */
+    #fixed-city-tab {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10000;
+      background: linear-gradient(135deg, #0a1535 0%, #1a0a20 100%);
+      overflow: auto;
+      display: none;
+    }
+    
+    .city-header {
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      color: white;
+      font-family: 'Orbitron', sans-serif;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .city-content {
+      padding: 15px;
+      overflow-y: auto;
+      max-height: calc(100vh - 60px);
+    }
+    
+    /* RGB эффекты */
+    @keyframes gradientText {
+      0% { background-position: 0% center; }
+      100% { background-position: 200% center; }
+    }
+    
+    .rgb-text {
+      color: transparent;
+      background: linear-gradient(90deg, #ff3b30, #0a84ff, #34c759);
+      background-size: 200% auto;
+      background-clip: text;
+      -webkit-background-clip: text;
+      animation: gradientText 4s linear infinite;
+    }
+    
+    .rgb-button {
+      background: linear-gradient(90deg, #ff3b30, #0a84ff);
+      background-size: 200% auto;
+      animation: gradientText 4s linear infinite;
+    }
+    
+    /* Анимации для зданий */
+    @keyframes upgradeAnimation {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    @keyframes floatingText {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
+    }
+    
+    @keyframes levelUpShake {
+      0% { transform: translateX(0); }
+      10% { transform: translateX(-5px); }
+      20% { transform: translateX(5px); }
+      30% { transform: translateX(-3px); }
+      40% { transform: translateX(3px); }
+      50% { transform: translateX(-1px); }
+      60% { transform: translateX(1px); }
+      100% { transform: translateX(0); }
+    }
+    
+    @keyframes flash {
+      0% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    
+    .building-card {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .building-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .notification.visible {
+      transform: translateX(0);
+    }
+    
+    .upgrade-particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0.8;
+      animation: floatingParticle 1.5s ease-out forwards;
+    }
+    
+    @keyframes floatingParticle {
+      0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+      100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
+    }
+    
+    .level-up-particle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0.8;
+      animation: levelUpParticle 2s ease-out forwards;
+    }
+    
+    @keyframes levelUpParticle {
+      0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+      100% { transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(0); opacity: 0; }
+    }
+    
+    .floating-text {
+      position: fixed;
+      font-weight: bold;
+      pointer-events: none;
+      z-index: 1002;
+      text-shadow: 0 0 10px currentColor;
+      animation: floatingText 1.5s ease-out forwards;
+    }
+    
+    /* Стили для городского фона */
+    .city-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+    
+    .city-background-grid {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: linear-gradient(rgba(10, 132, 255, 0.1) 1px, transparent 1px), 
+                        linear-gradient(90deg, rgba(10, 132, 255, 0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+      transform: perspective(500px) rotateX(60deg);
+      transform-origin: center top;
+    }
+    
+    .city-background-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, transparent 0%, rgba(10, 21, 53, 0.8) 100%);
+    }
+    
+    /* Информация о городе */
+    .city-info {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    /* Сетка зданий */
+    .buildings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    
+    /* Уведомления */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      border-radius: 5px;
+      z-index: 1001;
+      transform: translateX(150%);
+      transition: transform 0.3s ease;
+    }
+    
+    /* Адаптивность для маленьких экранов */
+    @media (max-width: 600px) {
+      .city-info {
+        flex-direction: column;
+      }
+      
+      .buildings-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
   <!-- Проверка устройства -->
@@ -105,10 +320,10 @@
           <i class="fas fa-trophy"></i>
           <span>Рейтинг</span>
         </div>
-        <div class="menu-button lucky-drive" onclick="openLuckyDrive()">
+        <div class="menu-button city-button">
           <div class="new-badge">NEW</div>
-          <i class="fas fa-car"></i>
-          <span>Lucky Drive</span>
+          <i class="fas fa-city"></i>
+          <span>Город</span>
         </div>
       </div>
 
@@ -139,307 +354,211 @@
 
     <!-- Нижняя навигация -->
     <div class="bottom-nav">
-      <div class="nav-button" data-tab="city">
-        <div class="nav-icon">
-          <i class="fas fa-city"></i>
-          <div class="new-badge-small">RGB</div>
-        </div>
-        <span>Город</span>
-      </div>
-      <div class="nav-button active" data-tab="home">
-        <div class="nav-icon">
-          <i class="fas fa-home"></i>
-        </div>
+      <div class="nav-button active" data-tab="main">
+        <i class="fas fa-home"></i>
         <span>Главная</span>
       </div>
-    </div>
-
-    <!-- Вкладки контента -->
-    <div id="home-tab" class="content-tab" style="display: block;">
-      <!-- Основной контент главной вкладки находится в game-area выше -->
-    </div>
-
-    <div id="city-tab" class="content-tab" style="display: none;">
-      <div class="city-header">
-        <h2>Город Кракена</h2>
-        <p>Стройте и улучшайте здания для получения пассивного дохода</p>
+      <div class="nav-button" data-tab="city">
+        <i class="fas fa-city"></i>
+        <span>Город</span>
       </div>
-      <div id="city-content" class="city-content">
-        <!-- Содержимое будет заполнено динамически -->
+      <div class="nav-button" data-tab="shop" onclick="openShop()">
+        <i class="fas fa-store"></i>
+        <span>Магазин</span>
+      </div>
+      <div class="nav-button" data-tab="social" onclick="openFriends()">
+        <i class="fas fa-users"></i>
+        <span>Друзья</span>
       </div>
     </div>
-
-    <div id="minigames-tab" class="content-tab" style="display: none;">
-      <div class="minigames-header">
-        <h2>Мини-игры</h2>
-        <p>Играй и получай дополнительные награды!</p>
-      </div>
-      <div id="minigames-container" class="minigames-container">
-        <!-- Содержимое будет заполнено динамически -->
-      </div>
-    </div>
-
+    
     <!-- Модальные окна -->
+    
     <!-- Магазин -->
     <div id="shop-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
           <h2>Магазин</h2>
-          <button class="close-button" onclick="closeShop()"><i class="fas fa-times"></i></button>
+          <span class="close-modal" onclick="closeShop()">&times;</span>
         </div>
-        
-        <div class="modal-tabs">
-          <div class="tab active" data-tab="upgrades">Улучшения</div>
-          <div class="tab" data-tab="boosters">Бустеры</div>
-          <div class="tab" data-tab="special">Особые</div>
-        </div>
-        
         <div class="modal-body">
-          <div class="tab-content active" id="upgrades-tab">
-            <div class="shop-item" onclick="buyUpgrade(1, 150, 50)">
-              <div class="shop-item-icon"><i class="fas fa-hand-pointer"></i></div>
-              <div class="shop-item-info">
-                <div class="shop-item-title">+1 очко/тап</div>
-                <div class="shop-item-desc">-50 энергии</div>
+          <!-- Вкладки магазина -->
+          <div class="tab-navigation">
+            <div class="tab active" data-tab="power">Мощность</div>
+            <div class="tab" data-tab="energy">Энергия</div>
+            <div class="tab" data-tab="auto">Авто-клики</div>
+            <div class="tab" data-tab="boosters">Бустеры</div>
+            <div class="tab" data-tab="premium">Премиум</div>
+          </div>
+          
+          <!-- Вкладка мощности -->
+          <div class="tab-content active" id="power-tab">
+            <div class="shop-items">
+              <div class="shop-item">
+                <div class="item-icon"><i class="fas fa-fist-raised"></i></div>
+                <div class="item-info">
+                  <h3>Базовая мощность</h3>
+                  <p>+1 к мощности клика</p>
+                </div>
+                <button class="buy-button" onclick="buyUpgrade(1, 50, 10)">
+                  <span class="cost">50</span>
+                  <i class="fas fa-bolt energy-cost">10</i>
+                </button>
               </div>
-              <div class="shop-item-price">
-                <i class="fas fa-coins"></i> 150
+              
+              <div class="shop-item">
+                <div class="item-icon"><i class="fas fa-fist-raised"></i><i class="fas fa-plus"></i></div>
+                <div class="item-info">
+                  <h3>Продвинутая мощность</h3>
+                  <p>+5 к мощности клика</p>
+                </div>
+                <button class="buy-button" onclick="buyUpgrade(5, 200, 50)">
+                  <span class="cost">200</span>
+                  <i class="fas fa-bolt energy-cost">50</i>
+                </button>
               </div>
-            </div>
-            
-            <div class="shop-item" onclick="buyUpgrade(5, 750, 100)">
-              <div class="shop-item-icon"><i class="fas fa-hand-pointer"></i></div>
-              <div class="shop-item-info">
-                <div class="shop-item-title">+5 очков/тап</div>
-                <div class="shop-item-desc">-100 энергии</div>
-              </div>
-              <div class="shop-item-price">
-                <i class="fas fa-coins"></i> 750
-              </div>
-            </div>
-            
-            <div class="shop-item" onclick="buyUpgrade(10, 1500, 200)">
-              <div class="shop-item-icon"><i class="fas fa-hand-pointer"></i></div>
-              <div class="shop-item-info">
-                <div class="shop-item-title">+10 очков/тап</div>
-                <div class="shop-item-desc">-200 энергии</div>
-              </div>
-              <div class="shop-item-price">
-                <i class="fas fa-coins"></i> 1500
-              </div>
-            </div>
-            
-            <div class="shop-item" onclick="buyUpgrade(50, 7500, 400)">
-              <div class="shop-item-icon"><i class="fas fa-hand-pointer"></i></div>
-              <div class="shop-item-info">
-                <div class="shop-item-title">+50 очков/тап</div>
-                <div class="shop-item-desc">-400 энергии</div>
-              </div>
-              <div class="shop-item-price">
-                <i class="fas fa-coins"></i> 7500
-              </div>
-            </div>
-            
-            <div class="shop-item" onclick="buyUpgrade(100, 15000, 800)">
-              <div class="shop-item-icon"><i class="fas fa-hand-pointer"></i></div>
-              <div class="shop-item-info">
-                <div class="shop-item-title">+100 очков/тап</div>
-                <div class="shop-item-desc">-800 энергии</div>
-              </div>
-              <div class="shop-item-price">
-                <i class="fas fa-coins"></i> 15000
-              </div>
-            </div>
-            
-            <div class="shop-item" onclick="buyEnergy(100, 200)">
-              <div class="shop-item-icon energy-icon-small"><i class="fas fa-bolt"></i></div>
-              <div class="shop-item-info">
-                <div class="shop-item-title">+100 энергии</div>
-                <div class="shop-item-desc">Восстановление энергии</div>
-              </div>
-              <div class="shop-item-price">
-                <i class="fas fa-coins"></i> 200
-              </div>
-            </div>
-            
-            <div class="shop-item" onclick="buyEnergy(250, 450)">
-              <div class="shop-item-icon energy-icon-small"><i class="fas fa-bolt"></i></div>
-              <div class="shop-item-info">
-                <div class="shop-item-title">+250 энергии</div>
-                <div class="shop-item-desc">Восстановление энергии</div>
-              </div>
-              <div class="shop-item-price">
-                <i class="fas fa-coins"></i> 450
-              </div>
-            </div>
-            
-            <div class="shop-item" onclick="buyEnergy(500, 800)">
-              <div class="shop-item-icon energy-icon-small"><i class="fas fa-bolt"></i></div>
-              <div class="shop-item-info">
-                <div class="shop-item-title">+500 энергии</div>
-                <div class="shop-item-desc">Восстановление энергии</div>
-              </div>
-              <div class="shop-item-price">
-                <i class="fas fa-coins"></i> 800
+              
+              <div class="shop-item">
+                <div class="item-icon"><i class="fas fa-fist-raised"></i><i class="fas fa-plus"></i><i class="fas fa-plus"></i></div>
+                <div class="item-info">
+                  <h3>Супер мощность</h3>
+                  <p>+10 к мощности клика</p>
+                </div>
+                <button class="buy-button" onclick="buyUpgrade(10, 1000, 100)">
+                  <span class="cost">1K</span>
+                  <i class="fas fa-bolt energy-cost">100</i>
+                </button>
               </div>
             </div>
           </div>
           
+          <!-- Вкладка энергии -->
+          <div class="tab-content" id="energy-tab">
+            <div class="shop-items">
+              <div class="shop-item">
+                <div class="item-icon"><i class="fas fa-bolt"></i></div>
+                <div class="item-info">
+                  <h3>Энергия +50</h3>
+                  <p>Увеличивает макс. энергию на 50</p>
+                </div>
+                <button class="buy-button" onclick="buyEnergyRegen(50, 200)">
+                  <span class="cost">200</span>
+                </button>
+              </div>
+              
+              <div class="shop-item">
+                <div class="item-icon"><i class="fas fa-bolt"></i><i class="fas fa-plus"></i></div>
+                <div class="item-info">
+                  <h3>Энергия +100</h3>
+                  <p>Увеличивает макс. энергию на 100</p>
+                </div>
+                <button class="buy-button" onclick="buyEnergyRegen(100, 500)">
+                  <span class="cost">500</span>
+                </button>
+              </div>
+              
+              <div class="shop-item">
+                <div class="item-icon"><i class="fas fa-bolt"></i><i class="fas fa-tachometer-alt"></i></div>
+                <div class="item-info">
+                  <h3>Регенерация +25%</h3>
+                  <p>Увеличивает скорость восстановления энергии</p>
+                </div>
+                <button class="buy-button" onclick="buyEnergyRegen(0.25, 1000)">
+                  <span class="cost">1K</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Вкладка авто-кликов -->
+          <div class="tab-content" id="auto-tab">
+            <div class="shop-items">
+              <div class="shop-item">
+                <div class="item-icon"><i class="fas fa-mouse-pointer"></i></div>
+                <div class="item-info">
+                  <h3>Авто-клик</h3>
+                  <p>+1 клик в секунду</p>
+                </div>
+                <button class="buy-button" onclick="buyAutoClicker(1, 500)">
+                  <span class="cost">500</span>
+                </button>
+              </div>
+              
+              <div class="shop-item">
+                <div class="item-icon"><i class="fas fa-mouse-pointer"></i><i class="fas fa-plus"></i></div>
+                <div class="item-info">
+                  <h3>Улучшенный авто-клик</h3>
+                  <p>+2 клика в секунду</p>
+                </div>
+                <button class="buy-button" onclick="buyAutoClicker(2, 1500)">
+                  <span class="cost">1.5K</span>
+                </button>
+              </div>
+              
+              <div class="shop-item">
+                <div class="item-icon"><i class="fas fa-mouse-pointer"></i><i class="fas fa-bolt"></i></div>
+                <div class="item-info">
+                  <h3>Турбо-кликер</h3>
+                  <p>+5 кликов в секунду</p>
+                </div>
+                <button class="buy-button" onclick="buyAutoClicker(5, 5000)">
+                  <span class="cost">5K</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Вкладка бустеров -->
           <div class="tab-content" id="boosters-tab">
-            <div class="shop-item" onclick="buyBooster('double', 3600, 2000)">
-              <div class="shop-item-icon booster-icon"><i class="fas fa-times"></i> <i class="fas fa-2"></i></div>
-              <div class="shop-item-info">
-                <div class="shop-item-title">Двойной доход</div>
-                <div class="shop-item-desc">Доход x2 на 1 час</div>
+            <div class="shop-items">
+              <div class="shop-item">
+                <div class="item-icon"><i class="fas fa-times"></i><i class="fas fa-2x"></i></div>
+                <div class="item-info">
+                  <h3>Множитель x2</h3>
+                  <p>Удваивает доход от кликов на 30 минут</p>
+                </div>
+                <button class="buy-button" onclick="buyBooster('multiplier', 1000)">
+                  <span class="cost">1K</span>
+                </button>
               </div>
-              <div class="shop-item-price">
-                <i class="fas fa-coins"></i> 2000
+              
+              <div class="shop-item">
+                <div class="item-icon"><i class="fas fa-tachometer-alt"></i></div>
+                <div class="item-info">
+                  <h3>Ускоритель</h3>
+                  <p>Увеличивает скорость авто-кликов в 2 раза на 15 минут</p>
+                </div>
+                <button class="buy-button" onclick="buyBooster('speed', 800)">
+                  <span class="cost">800</span>
+                </button>
               </div>
-            </div>
-            
-            <div class="shop-item" onclick="buyBooster('energy', 1800, 1500)">
-              <div class="shop-item-icon booster-icon"><i class="fas fa-infinity"></i></div>
-              <div class="shop-item-info">
-                <div class="shop-item-title">Безлимитная энергия</div>
-                <div class="shop-item-desc">Неограниченная энергия на 30 минут</div>
-              </div>
-              <div class="shop-item-price">
-                <i class="fas fa-coins"></i> 1500
-              </div>
-            </div>
-            
-            <div class="shop-item" onclick="buyBooster('auto', 1800, 3000)">
-              <div class="shop-item-icon booster-icon"><i class="fas fa-robot"></i></div>
-              <div class="shop-item-info">
-                <div class="shop-item-title">Автокликер</div>
-                <div class="shop-item-desc">5 кликов/сек на 30 минут</div>
-              </div>
-              <div class="shop-item-price">
-                <i class="fas fa-coins"></i> 3000
-              </div>
-            </div>
-            
-            <div class="shop-item premium-item" onclick="buyPremium(7500)">
-              <div class="shop-item-icon premium-icon"><i class="fas fa-crown"></i></div>
-              <div class="shop-item-info">
-                <div class="shop-item-title">Премиум доступ</div>
-                <div class="shop-item-desc">Все бустеры, VIP статус, +50% монет</div>
-              </div>
-              <div class="shop-item-price">
-                <i class="fas fa-coins"></i> 7500
+              
+              <div class="shop-item">
+                <div class="item-icon"><i class="fas fa-battery-full"></i></div>
+                <div class="item-info">
+                  <h3>Энергетический бустер</h3>
+                  <p>Мгновенно восстанавливает всю энергию</p>
+                </div>
+                <button class="buy-button" onclick="buyBooster('energy', 500)">
+                  <span class="cost">500</span>
+                </button>
               </div>
             </div>
           </div>
           
-          <div class="tab-content" id="special-tab">
-            <div class="shop-item special-item" onclick="buySpecialItem('auto_energy', 5000)">
-              <div class="shop-item-icon special-icon"><i class="fas fa-battery-full"></i></div>
-              <div class="shop-item-info">
-                <div class="shop-item-title">Автоматический восстановитель</div>
-                <div class="shop-item-desc">Автоматически восстанавливает энергию, когда она заканчивается</div>
+          <!-- Вкладка премиум -->
+          <div class="tab-content" id="premium-tab">
+            <div class="shop-items">
+              <div class="shop-item premium-item">
+                <div class="item-icon premium-icon"><i class="fas fa-crown"></i></div>
+                <div class="item-info">
+                  <h3>VIP Статус</h3>
+                  <p>Постоянное увеличение дохода на 50% и специальные бонусы</p>
+                </div>
+                <button class="buy-button premium-button" onclick="buyPremium(5000)">
+                  <span class="cost">5K</span>
+                </button>
               </div>
-              <div class="shop-item-price">
-                <i class="fas fa-coins"></i> 5000
-              </div>
-            </div>
-            
-            <div class="shop-item special-item" onclick="buySpecialItem('gold_kraken', 25000)">
-              <div class="shop-item-icon special-icon"><i class="fas fa-dragon"></i></div>
-              <div class="shop-item-info">
-                <div class="shop-item-title">Золотой Кракен</div>
-                <div class="shop-item-desc">Эксклюзивный скин для Кракена, +25% к доходу</div>
-              </div>
-              <div class="shop-item-price">
-                <i class="fas fa-coins"></i> 25000
-              </div>
-            </div>
-            
-            <div class="shop-item special-item" onclick="buySpecialItem('quantum_tap', 100000)">
-              <div class="shop-item-icon special-icon"><i class="fas fa-atom"></i></div>
-              <div class="shop-item-info">
-                <div class="shop-item-title">Квантовый тап</div>
-                <div class="shop-item-desc">1% шанс увеличить доход в 1000 раз при каждом клике</div>
-              </div>
-              <div class="shop-item-price">
-                <i class="fas fa-coins"></i> 100000
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Модальное окно головоломки -->
-    <div id="puzzle-modal" class="modal">
-      <div class="modal-content puzzle-content">
-        <div class="modal-header">
-          <h2>Головоломка</h2>
-          <button class="close-button" onclick="closePuzzle()"><i class="fas fa-times"></i></button>
-        </div>
-        
-        <div class="modal-body">
-          <div class="puzzle-info">
-            <div class="difficulty-selector">
-              <button class="difficulty-btn active">Easy</button>
-              <button class="difficulty-btn">Medium</button>
-              <button class="difficulty-btn">Hard</button>
-            </div>
-            
-            <div class="puzzle-reward">
-              <i class="fas fa-coins"></i>
-              <span id="puzzle-reward">50</span>
-            </div>
-            
-            <div class="puzzle-timer">
-              <i class="fas fa-hourglass-half"></i>
-              <span id="timer">60</span>
-            </div>
-          </div>
-          
-          <div class="puzzle-progress-container">
-            <div id="puzzle-progress" class="puzzle-progress"></div>
-          </div>
-          
-          <div id="puzzle-container" class="puzzle-container">
-            <!-- Ячейки головоломки будут созданы динамически -->
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Друзья -->
-    <div id="friends-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Друзья</h2>
-          <button class="close-button" onclick="closeFriends()"><i class="fas fa-times"></i></button>
-        </div>
-        
-        <div class="modal-tabs">
-          <div class="tab active" data-tab="friends-list">Список</div>
-          <div class="tab" data-tab="invites">Приглашения</div>
-        </div>
-        
-        <div class="modal-body">
-          <div class="tab-content active" id="friends-list-tab">
-            <div class="friends-list" id="friends-list">
-              <!-- Список друзей будет заполнен динамически -->
-            </div>
-          </div>
-          
-          <div class="tab-content" id="invites-tab">
-            <div class="invite-link">
-              <p>Пригласи друзей в игру и получи 50000 монет за каждого!</p>
-              <div class="invite-qr">
-                <img src="TAPKRAKEN.png" alt="QR-код приглашения">
-              </div>
-              <button class="copy-link-btn" onclick="copyInviteLink()">
-                <i class="fas fa-copy"></i> Копировать ссылку
-              </button>
-              <button class="share-btn" onclick="shareInvite()">
-                <i class="fas fa-share-alt"></i> Поделиться
-              </button>
-              <p class="invite-note">При переходе по ссылке друг получит бонус в 1000 монет!</p>
             </div>
           </div>
         </div>
@@ -451,92 +570,54 @@
       <div class="modal-content">
         <div class="modal-header">
           <h2>Задания</h2>
-          <button class="close-button" onclick="closeTasks()"><i class="fas fa-times"></i></button>
+          <span class="close-modal" onclick="closeTasks()">&times;</span>
         </div>
-        
-        <div class="modal-tabs">
-          <div class="tab active" data-tab="daily-tasks">Ежедневные</div>
-          <div class="tab" data-tab="achievements">Достижения</div>
-        </div>
-        
         <div class="modal-body">
-          <div class="tab-content active" id="daily-tasks-tab">
-            <div class="tasks-list" id="daily-tasks-list">
-              <!-- Список заданий будет заполнен динамически -->
-            </div>
-          </div>
-          
-          <div class="tab-content" id="achievements-tab">
-            <div class="achievements-list" id="achievements-list">
-              <!-- Список достижений будет заполнен динамически -->
-            </div>
+          <div id="tasks-container">
+            <!-- Задания будут добавлены динамически -->
           </div>
         </div>
       </div>
     </div>
     
-    <!-- Лидерборд -->
+    <!-- Друзья -->
+    <div id="friends-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Друзья</h2>
+          <span class="close-modal" onclick="closeFriends()">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="friends-search">
+            <input type="text" placeholder="Поиск друзей..." oninput="filterFriends()">
+            <div class="filter-buttons">
+              <button class="filter-button active" data-filter="all">Все</button>
+              <button class="filter-button" data-filter="online">Онлайн</button>
+              <button class="filter-button" data-filter="gifts">Подарки</button>
+            </div>
+          </div>
+          <div id="friends-container">
+            <!-- Друзья будут добавлены динамически -->
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Рейтинг -->
     <div id="leaderboard-modal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Таблица лидеров</h2>
-          <button class="close-button" onclick="closeLeaderboard()"><i class="fas fa-times"></i></button>
+          <h2>Рейтинг</h2>
+          <span class="close-modal" onclick="closeLeaderboard()">&times;</span>
         </div>
-        
-        <div class="modal-tabs">
-          <div class="tab active" data-tab="global">Глобальный</div>
-          <div class="tab" data-tab="friends-board">Друзья</div>
-        </div>
-        
         <div class="modal-body">
-          <div class="tab-content active" id="global-tab">
-            <div class="leaderboard-list" id="global-leaderboard">
-              <!-- Глобальный лидерборд будет заполнен динамически -->
-            </div>
+          <div class="leaderboard-tabs">
+            <button class="leaderboard-tab active" data-type="global">Глобальный</button>
+            <button class="leaderboard-tab" data-type="friends">Друзья</button>
+            <button class="leaderboard-tab" data-type="weekly">За неделю</button>
           </div>
-          
-          <div class="tab-content" id="friends-board-tab">
-            <div class="leaderboard-list" id="friends-leaderboard">
-              <!-- Лидерборд друзей будет заполнен динамически -->
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Lucky Drive -->
-    <div id="lucky-drive-modal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Lucky Drive</h2>
-          <button class="close-button" onclick="closeLuckyDrive()"><i class="fas fa-times"></i></button>
-        </div>
-        
-        <div class="modal-body">
-          <div class="lucky-drive-container">
-            <div class="wheel-container">
-              <div class="wheel" id="lucky-wheel">
-                <!-- Сектора колеса будут созданы динамически -->
-              </div>
-              <div class="wheel-pointer"></div>
-            </div>
-            
-            <div class="lucky-drive-info">
-              <div class="spin-price">
-                <i class="fas fa-coins"></i> <span id="spin-price">200</span>
-              </div>
-              
-              <button class="spin-button" onclick="spinWheel()">
-                <i class="fas fa-play"></i> Крутить колесо
-              </button>
-              
-              <div class="prize-history">
-                <h3>История призов</h3>
-                <div id="prize-history-list" class="prize-history-list">
-                  <!-- История призов будет заполнена динамически -->
-                </div>
-              </div>
-            </div>
+          <div id="leaderboard-container">
+            <!-- Список лидеров будет добавлен динамически -->
           </div>
         </div>
       </div>
@@ -547,78 +628,170 @@
       <div class="modal-content">
         <div class="modal-header">
           <h2>Telegram команды</h2>
-          <button class="close-button" onclick="closeTelegramCommands()"><i class="fas fa-times"></i></button>
+          <span class="close-modal" onclick="closeTelegramCommands()">&times;</span>
         </div>
-        
         <div class="modal-body">
-          <div class="telegram-info">
-            <p>Получай бонусы и управляй игрой через Telegram бота!</p>
-            <div class="telegram-qr">
-              <img src="TAPKRAKEN.png" alt="QR-код для Telegram">
-            </div>
-            <div class="telegram-link">@TapKrakenBot</div>
-          </div>
-          
           <div class="commands-list">
             <div class="command-item">
               <div class="command-name">/start</div>
-              <div class="command-desc">Начать игру и получить ссылку</div>
+              <div class="command-description">Начать игру и получить информацию</div>
             </div>
-            
+            <div class="command-item">
+              <div class="command-name">/help</div>
+              <div class="command-description">Получить список доступных команд</div>
+            </div>
+            <div class="command-item">
+              <div class="command-name">/info</div>
+              <div class="command-description">Получить информацию о вашем прогрессе</div>
+            </div>
             <div class="command-item">
               <div class="command-name">/daily</div>
-              <div class="command-desc">Получить ежедневную награду</div>
+              <div class="command-description">Получить ежедневную награду</div>
             </div>
-            
+            <div class="command-item">
+              <div class="command-name">/gift</div>
+              <div class="command-description">Отправить подарок другу</div>
+            </div>
             <div class="command-item">
               <div class="command-name">/invite</div>
-              <div class="command-desc">Пригласить друзей и получить 50000 монет</div>
+              <div class="command-description">Пригласить друзей в игру</div>
             </div>
-            
             <div class="command-item">
               <div class="command-name">/boost</div>
-              <div class="command-desc">Получить временный бонус (только 1 раз!)</div>
+              <div class="command-description">Активировать временный буст</div>
             </div>
-            
-            <div class="command-item">
-              <div class="command-name">/gift [username]</div>
-              <div class="command-desc">Отправить подарок другому игроку</div>
-            </div>
-            
-            <div class="command-item">
-              <div class="command-name">/stats</div>
-              <div class="command-desc">Получить текущую статистику</div>
+          </div>
+          <div class="share-container">
+            <p>Поделитесь игрой с друзьями:</p>
+            <div class="share-buttons">
+              <button class="share-button telegram" onclick="shareToBots()">
+                <i class="fab fa-telegram"></i> Поделиться
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
+    
+    <!-- Головоломка -->
+    <div id="puzzle-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Головоломка</h2>
+          <span class="close-modal" onclick="closePuzzle()">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="puzzle-difficulty">
+            <button class="difficulty-button" onclick="startPuzzle('easy')">Легкий</button>
+            <button class="difficulty-button" onclick="startPuzzle('medium')">Средний</button>
+            <button class="difficulty-button" onclick="startPuzzle('hard')">Сложный</button>
+          </div>
+          <div id="puzzle-container">
+            <!-- Головоломка будет добавлена динамически -->
+          </div>
+          <div id="puzzle-timer" class="puzzle-timer">01:00</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Уведомления -->
+    <div id="notification" class="notification">
+      <div class="notification-content">
+        <i class="fas fa-info-circle"></i>
+        <span id="notification-message"></span>
+      </div>
+    </div>
   </div>
 
-  <!-- Подключение JavaScript -->
+  <!-- Скрипты -->
   <script src="script.js"></script>
   <script src="puzzle.js"></script>
-  <script src="tg_bot_functions.js"></script>
-  <script src="city_functions.js"></script>
-  <script src="minigames.js"></script>
+  <!-- Важно! Добавьте этот скрипт последним, чтобы он мог переопределить обработчики событий -->
+  <script src="fix_city.js"></script>
   
   <script>
-    // Инициализация при загрузке
+    // Проверка, мобильное ли устройство
     document.addEventListener('DOMContentLoaded', function() {
-      // Инициализируем город
-      if (window.city) {
-        window.city.openCityTab();
-      }
+      // Проверка типа устройства
+      checkDeviceType();
       
-      // Обработчик для кнопок навигации
+      // Симуляция загрузки
+      const startTime = Date.now();
+      
+      let progress = 0;
+      const loadingInterval = setInterval(() => {
+        progress += Math.random() * 3;
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(loadingInterval);
+          
+          // Минимальное время загрузки
+          const elapsed = Date.now() - startTime;
+          const remainingTime = Math.max(0, 3000 - elapsed);
+          
+          setTimeout(() => {
+            // Скрытие экрана загрузки
+            document.getElementById('loading-screen').style.opacity = '0';
+            setTimeout(() => {
+              document.getElementById('loading-screen').style.display = 'none';
+              document.getElementById('main-content').style.display = 'flex';
+              
+              // Загрузка данных города
+              if (typeof renderFixedCity === 'function') {
+                renderFixedCity();
+              }
+            }, 500);
+          }, remainingTime);
+        }
+        
+        // Обновление прогресс-бара
+        document.getElementById('loading-progress-bar').style.width = `${progress}%`;
+      }, 100);
+      
+      // Обработчики вкладок в модальных окнах
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+          const tabName = this.dataset.tab;
+          
+          // Удаляем активный класс со всех вкладок
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          
+          // Скрываем все контенты вкладок
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          
+          // Добавляем активный класс текущей вкладке
+          this.classList.add('active');
+          
+          // Показываем контент активной вкладки
+          document.getElementById(`${tabName}-tab`).classList.add('active');
+        });
+      });
+      
+      // Обработчики для фильтров друзей
+      document.querySelectorAll('.filter-button').forEach(button => {
+        button.addEventListener('click', function() {
+          document.querySelectorAll('.filter-button').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          filterFriends(this.dataset.filter);
+        });
+      });
+      
+      // Обработчики для вкладок рейтинга
+      document.querySelectorAll('.leaderboard-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+          document.querySelectorAll('.leaderboard-tab').forEach(t => t.classList.remove('active'));
+          this.classList.add('active');
+          renderLeaderboard(this.dataset.type);
+        });
+      });
+      
+      // Исправление переключения между вкладками
       document.querySelectorAll('.nav-button').forEach(button => {
         button.addEventListener('click', function() {
-          const tabName = this.getAttribute('data-tab');
-          if (tabName === 'city' && window.city) {
-            window.city.openCityTab();
-          } else if (tabName === 'home') {
-            switchTab('home');
-          }
+          document.querySelectorAll('.nav-button').forEach(b => {
+            b.classList.remove('active');
+          });
+          this.classList.add('active');
         });
       });
     });
